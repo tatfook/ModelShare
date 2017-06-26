@@ -1,101 +1,55 @@
---[[
-Title: Testing every aspect of Mod interface
-Author(s):  LiXizhi
-Date: 2015.10
-Desc: This is also a greate demo of mod interface. 
+﻿--[[
+Title: ModelShare
+Author(s):  BIG
+Date: 2017.6
+Desc: 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)Mod/Test/main.lua");
-local Test = commonlib.gettable("Mod.Test");
+NPL.load("(gl)Mod/ModelShare/main.lua");
+local ModelShare = commonlib.gettable("Mod.ModelShare");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/Test/DemoCommand.lua");
-NPL.load("(gl)Mod/Test/DemoEntity.lua");
-NPL.load("(gl)Mod/Test/DemoGUI.lua");
-NPL.load("(gl)Mod/Test/DemoItem.lua");
-NPL.load("(gl)Mod/Test/DemoSceneContext.lua");
-local DemoSceneContext = commonlib.gettable("Mod.Test.DemoSceneContext");
-local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
-local DemoItem = commonlib.gettable("Mod.Test.DemoItem");
-local DemoGUI = commonlib.gettable("Mod.Test.DemoGUI");
-local DemoEntity = commonlib.gettable("Mod.Test.DemoEntity");
-local DemoCommand = commonlib.gettable("Mod.Test.DemoCommand");
-local Test = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.Test"));
 
-function Test:ctor()
+NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
+
+local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
+
+local ModelShare = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.ModelShare"));
+
+function ModelShare:ctor()
 end
 
--- virtual function get mod name
-
-function Test:GetName()
-	return "Test"
+function ModelShare:GetName()
+	return "ModelShare"
 end
 
--- virtual function get mod description 
-function Test:GetDesc()
-	return "Test is a plugin in paracraft"
+function ModelShare:GetDesc()
+	return "ModelShare Mod"
 end
 
-function Test:init()
-	LOG.std(nil, "info", "Test", "plugin initialized");
-	DemoItem:init();
-	DemoGUI:init();
-	DemoEntity:init();
-	DemoCommand:init();
+function ModelShare:init()
+	GameLogic.GetFilters():add_filter("GetExporters",function(exporters)
+		local title = L"分享模板到Keepwork";
+		local desc  = L"将模板分享到keepwork并进行3D打印";
+		local temp = exporters[3];
+		exporters[3] = {id="ShareModel", title=title, desc=desc};
+		exporters[#exporters+1] = temp;
+
+		return exporters;
+	end);
+
+	GameLogic.GetFilters():add_filter("select_exporter", function(id)
+		if(id == "ShareModel") then
+			id = nil; -- prevent other exporters
+			local curShareWindow = ShareWindow:new();
+		end
+		return id;
+	end);
+end
+
+function ModelShare:OnLogin()
+end
+
+function ModelShare:OnWorldLoad()
 	
-	-- register default context
-	DemoSceneContext:ApplyToDefaultContext();
-end
-
-function Test:OnLogin()
-end
-
--- called when a new world is loaded. 
-function Test:OnWorldLoad()
-	LOG.std(nil, "info", "Test", "Mod test on world loaded");
-	DemoGUI:OnWorldLoad();
-	DemoItem:OnWorldLoad();
-end
-
--- called when a world is unloaded. 
-function Test:OnLeaveWorld()
-	LOG.std(nil, "info", "Test", "Mod test on leave world");
-	DemoGUI:OnLeaveWorld();
-end
-
-function Test:OnDestroy()
-end
-
-function Test:handleKeyEvent(event)
-	return DemoGUI:handleKeyEvent(event);
-end
-
-
--- virtual: called when a desktop is inited such as displaying the initial user interface. 
--- return true to prevent further processing.
-function Test:OnInitDesktop()
-	-- we will show our own UI here
-	return true;
-end
-
--- virtual: called when a desktop mode is changed such as from game mode to edit mode. 
--- return true to prevent further processing.
-function Test:OnActivateDesktop(mode)
-	-- we will toggle our own UI here
-	local Desktop = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop");
-	if(Desktop.mode) then
-		GameLogic.AddBBS("test", "Test进入编辑模式", 4000, "0 255 0")
-	else
-		GameLogic.AddBBS("test", "Test进入游戏模式", 4000, "255 255 0")
-	end
-	-- return true to suppress default desktop interface.
-	return true;
-end
-
-function Test:OnClickExitApp()
-	_guihelper.MessageBox("wanna exit?" , function()
-		ParaEngine.GetAttributeObject():SetField("IsWindowClosingAllowed", true);
-		ParaGlobal.ExitApp();
-	end)
-	return true;
 end
