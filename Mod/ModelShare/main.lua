@@ -9,9 +9,10 @@ NPL.load("(gl)Mod/ModelShare/main.lua");
 local ModelShare = commonlib.gettable("Mod.ModelShare");
 ------------------------------------------------------------
 ]]
-
+NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
 
+local loginMain   = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
 
 local ModelShare = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.ModelShare"));
@@ -42,6 +43,8 @@ function ModelShare:init()
 		if(id == "ShareModel") then
 			id = nil; -- prevent other exporters
 			local curShareWindow = ShareWindow:new();
+			curShareWindow:SetInstance();
+			curShareWindow:ShowPage();
 		end
 		return id;
 	end);

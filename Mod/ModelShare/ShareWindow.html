@@ -8,19 +8,138 @@
         <script type="text/npl" refresh="false" src="ShareWindow.lua">
             <![CDATA[
                 local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
-                ShareWindow:SetPage();
+                local loginMain   = commonlib.gettable("Mod.WorldShare.login.loginMain");
+                
+                local curShareWindow = ShareWindow.curInstance;
+                curShareWindow:SetPage();
+                
+                function isSignedIn()
+                    return loginMain.IsSignedIn();
+                end
+
+                function login()
+                    curShareWindow:Login();
+                end
+
+                function register()
+                    ParaGlobal.ShellExecute("open", loginMain.site .. "/wiki/home", "", "", 1);
+                end
+
+                function screenshot()
+                    if(curShareWindow.screenshot) then
+                        return curShareWindow.screenshot;
+                    else
+                        return false;
+                    end
+                end
 
                 function closePage()
-                    ShareWindow:OnClose();
+                    curShareWindow:OnClose();
                 end
             ]]>
         </script>
         <style type="text/mcss">
-            
+           {
+                ["pull-left"] = {
+                    float = "left",
+                },
+                ["common-button"] = {
+                    color = "#FFFFFF",
+                    textcolor = "#FFFFFF",
+                    spacing = 20,
+                },
+                ["tag-button"] = {
+                    ["font-size"]     = 12,
+                    ["margin-right"]  = 10,
+                    ["margin-bottom"] = 5,
+                    spacing = 6,
+                },
+                ["common-field"] = {
+                    height = 25,
+                }
+           }
         </style>
         <div style="width:500px;height:270px;">
-            <aries:window mode="thin" width="450" height="500" style="float:left;" title='<%=L"保存模板" %>' onclose="closePage">
-                
+            <aries:window mode="thin" width="450" height="500" style="color:white;" title='<%=L"保存模板" %>' onclose="closePage">
+                <div style="padding:10px;padding-top:16px;">
+                    <div>
+                        <div class="pull-left" style="width:90px;height:110px;">
+                            <pe:if condition="<%= screenshot()%>">
+                                <img src="<%= screenshot()%>" alt="Alternate Text" />
+                            </pe:if>
+                            <pe:if condition="<%= not screenshot()%>">
+                                <div style="width: 80px;height: 80px;background-color:#FFFFFF;textcolor:black;color:black">
+                                    暂无截图
+                                </div>
+                            </pe:if>
+
+                            <input type="button" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
+                        </div>
+                        <div class="pull-left" style="width:330px;">
+                            <div style="margin-bottom:5px;">模板名称<input type="text" EmptyText="请输入模板名称" class="bbs_text common-field" style="margin-left:10px;"/></div>
+                            <div style="margin-bottom:27px;">
+                                保存位置
+                                <select name="" onclick="" style="margin-left:10px;width:263px;" class="common-field">
+                                    <option value="" name="">本地当前存档内</option>
+                                    <option value="" name="">本地模板库（即全局模板）</option>
+                                    <option value="" name="">KeepWork云</option>
+                                    <option value="" name="">KeepWork云和当前存档</option>
+                                    <option value="" name="" selected="selected">KeepWork云和本地模板库</option>
+                                </select>
+                            </div>
+                            <div><input type="checkbox" />演员使用相对位置</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <div style="margin-bottom:5px;">
+                            模板描述
+                        </div>
+                        <div style="background-color:white;width:420px;">
+                            <textarea style="height:100px;">
+                                asdfasdfasdf
+                            </textarea>
+                        </div>
+                        <div style="margin-top:5px;">
+                            方块数量：123456     体积：30*30*30
+                        </div>
+                    </div>
+                    <div style="margin-top:5px;">
+                        <input type="checkbox" enabled="false"/>分享作品
+                    </div>
+                    <div style="margin-top:5px;">
+                        <pe:if condition="<%= isSignedIn()%>">
+                            <div>
+                                <div class="pull-left" style="width:80px;">
+                                    作品标签：
+                                </div>
+                                <div class="pull-left" style="font-size:12px;base-font-size:12px;width:340px;">
+                                    <div>
+                                        <input class="bbs_text common-field" style="width:auto" value="原创;大富网络;一人一网;鸡犬升天" />
+                                    </div>
+                                    <div>
+                                        热门标签：
+                                        <button class="tag-button mc_light_grey_button_with_fillet">原创</button>
+                                        <button class="tag-button mc_light_grey_button_with_fillet">大富网络</button>
+                                        <button class="tag-button mc_light_grey_button_with_fillet">一人一网</button>
+                                        <button class="tag-button mc_light_grey_button_with_fillet">鸡犬升天</button>
+                                    </div>
+                                    <div style="margin-top:5px;">标签之间请用逗号进行分隔，最多不超过四个</div>
+                                </div>
+                            </div>
+                        </pe:if>
+                        <pe:if condition="<%= not isSignedIn()%>">
+                            <div style="text-align:center;width:370px;height:65px;padding-top:20px;">
+                                登陆Keepwork，保存自己的作品&nbsp;&nbsp;
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF;" onclick="login">登陆</a>
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF" onclick="register">&nbsp;&nbsp;注册</a>
+                            </div>
+                        </pe:if>
+                    </div>
+                    <div style="margin-top:15px;margin-left:110px;">
+                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" enabled="false">保存并分享</button>
+                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="closePage">取消</button>
+                    </div>
+                </div>
             </aries:window>
         </div>
     </pe:mcml>
