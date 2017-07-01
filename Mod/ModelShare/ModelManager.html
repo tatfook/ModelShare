@@ -1,4 +1,4 @@
-<!-- "script/apps/Aries/Creator/Game/Tasks/BuildQuestTask.html" -->
+Ôªø<!-- "script/apps/Aries/Creator/Game/Tasks/BuildQuestTask.html" -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -7,294 +7,316 @@
 </head>
 <body>
     <pe:mcml>
-        <script refresh="false" type="text/npl" src="BuildQuestTask.lua">
+        <script refresh="false" type="text/npl" src="ModelManager.lua">
             <![CDATA[
-                NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestProvider.lua");
-                local BuildQuestProvider =  commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
-                local LocalNPC = commonlib.gettable("MyCompany.Aries.Creator.AI.LocalNPC")
-                local GameLogic = commonlib.gettable("MyCompany.Aries.Game.GameLogic")
-                BuildQuest = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest")
-                BuildQuest.OnInit(BuildQuest.template_theme_index,BuildQuest.template_task_index)
+                local ModelManager       = commonlib.gettable("Mod.ModelShare.ModelManager");
+                local BuildQuestProvider = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
+                local LocalNPC           = commonlib.gettable("MyCompany.Aries.Creator.AI.LocalNPC");
+                local GameLogic          = commonlib.gettable("MyCompany.Aries.Game.GameLogic");
+                BuildQuest               = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
+                
+                curModelManager = ModelManager.curInstance;
+                curModelManager:SetPage();
 
                 isEditing = false;
                 --local theme_index = BuildQuest.cur_theme_index;
                 local theme_index = BuildQuest.template_theme_index
-                local task_index = BuildQuest.cur_task_index;
+                local task_index  = BuildQuest.cur_task_index;
 
                 function RestEditing()
-                isEditing = false;
+                    isEditing = false;
                 end
 
                 function ClosePage()
-                Page:CloseWindow();
-                --BuildQuest.ClosePage(true);
-                --BuildQuest.EndEditing(true);
+                    curModelManager:OnClose();
                 end
 
                 function GetCurrentPosText()
-                local center_x, center_y, center_z, radius, region_x, region_z = BuildQuest.GetPosition()
-                return string.format("%d,%d,%d", center_x, center_y, center_z);
-                end
-
-                function GetTheme_DS(index)
-                local themesDS = BuildQuestProvider.GetThemes_DS();
-                if(not index) then
-                return #themesDS;
-                else
-                return themesDS[index];
-                end
+                    local center_x, center_y, center_z, radius, region_x, region_z = BuildQuest.GetPosition();
+                    return string.format("%d,%d,%d", center_x, center_y, center_z);
                 end
 
                 function GetCurThemeIndex()
-                return theme_index;
+                    return theme_index;
                 end
 
                 function ChangeTheme(name,mcmlNode)
-                local index = mcmlNode:GetAttribute("param1");
-                index = tonumber(index);
-                theme_index = index;
-                --BuildQuest.cur_theme_index = index;
-                BuildQuest.template_theme_index = index;
-                BuildQuest.OnInit(BuildQuest.template_theme_index,1);
-                task_index = BuildQuest.cur_task_index;
-                RestEditing();
-                Page:Refresh(0.1);
+                    local index = mcmlNode:GetAttribute("param1");
+                    index       = tonumber(index);
+                    theme_index = index;
+
+                    --BuildQuest.cur_theme_index = index;
+                    BuildQuest.template_theme_index = index;
+                    BuildQuest.OnInit(BuildQuest.template_theme_index,1);
+                    task_index = BuildQuest.cur_task_index;
+                    RestEditing();
+                    Page:Refresh(0.1);
                 end
 
                 function GetTask_DS(index)
-                local tasksDS = BuildQuestProvider.GetTasks_DS(theme_index);
-                if(not index) then
-                return #tasksDS;
-                else
-                return tasksDS[index];
-                end
+                    local tasksDS = BuildQuestProvider.GetTasks_DS(theme_index);
+
+                    if(not index) then
+                        return #tasksDS;
+                    else
+                        return tasksDS[index];
+                    end
                 end
 
                 function GetTaskName()
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                if(task) then
-                return task.name or "";
-                else
-                return "";
-                end
+                    local task = BuildQuestProvider.GetTask(theme_index,task_index);
+
+                    if(task) then
+                        return task.name or "";
+                    else
+                        return "";
+                    end
                 end
 
                 function GetTaskImage()
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                local image = "";
-                if(task) then
-                image = task.image;
-                end
-                return image;
+                    local task  = BuildQuestProvider.GetTask(theme_index,task_index);
+                    local image = "";
+
+                    if(task) then
+                        image = task.image;
+                    end
+
+                    return image;
                 end
 
                 function GetTaskDesc()
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                local desc = "";
-                if(task) then
-                desc = task.desc;
-                end
-                return desc;
+                    local task = BuildQuestProvider.GetTask(theme_index,task_index);
+                    local desc = "";
+
+                    if(task) then
+                        desc = task.desc;
+                    end
+
+                    return desc;
                 end
 
 
                 function GetTaskID(index)
-                return tostring(index);
+                    return tostring(index);
                 end
 
                 function GetTaskIcon(index)
-                local task = BuildQuestProvider.GetTask(theme_index,index);
-                local icon = "";
-                if(task) then
-                icon = task.icon;
-                end
-                return icon;
+                    local task = BuildQuestProvider.GetTask(theme_index,index);
+                    local icon = "";
+
+                    if(task) then
+                        icon = task.icon;
+                    end
+
+                    return icon;
                 end
 
                 function TaskIsLocked(index)
-                if(index > (BuildQuest.cur_task_index)) then
-                return true;
-                else
-                return false;
-                end
+                    if(index > (BuildQuest.cur_task_index)) then
+                        return true;
+                    else
+                        return false;
+                    end
                 end
 
                 function TaskIsFinished(index)
-                local task = BuildQuestProvider.GetTask(theme_index,index);
-                if(index < BuildQuest.cur_task_index) then
-                return true;
-                else
-                return false;
-                end
+                    local task = BuildQuestProvider.GetTask(theme_index,index);
+
+                    if(index < BuildQuest.cur_task_index) then
+                        return true;
+                    else
+                        return false;
+                    end
                 end
 
                 function ChangeTask(name,mcmlNode)
-                local index = mcmlNode:GetAttribute("param1");
-                task_index = tonumber(index);
-                BuildQuest.template_task_index = index;
-                RestEditing();
-                Page:Refresh(0.1);
+                    local index = mcmlNode:GetAttribute("param1");
+                    task_index  = tonumber(index);
+
+                    BuildQuest.template_task_index = index;
+                    RestEditing();
+                    Page:Refresh(0.1);
                 end
 
                 function GetBlock_DS(index)
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                local ds;
-                if(task) then
-                ds = task:GetBlockTypes();
-                end
-                if(ds) then
-                if(not index) then
-                return #ds;
-                else
-                return ds[index];
-                end
-                end
+                    local task = BuildQuestProvider.GetTask(theme_index,task_index);
+                    local ds;
 
+                    if(task) then
+                        ds = task:GetBlockTypes();
+                    end
+
+                    if(ds) then
+                        if(not index) then
+                            return #ds;
+                        else
+                            return ds[index];
+                        end
+                    end
                 end
 
                 function CurTaskIsLocked()
-                local islocked = TaskIsLocked(task_index);
-                return islocked;
+                    local islocked = TaskIsLocked(task_index);
+                    return islocked;
                 end
 
                 function CurTaskIsFinished()
-                local isfinished = TaskIsFinished(task_index);
-                return isfinished;
+                    local isfinished = TaskIsFinished(task_index);
+                    return isfinished;
                 end
 
                 function StartBuild()
-                --[[
-                local islocked = TaskIsLocked(task_index);
-                if(islocked) then
-                _guihelper.MessageBox(L"∏√»ŒŒÒªπŒ¥Ω‚À¯£¨ƒø«∞≤ªø…Ω®‘Ï£°");
-                return;
-                end
-                --]]
-                local cur_task = BuildQuest.GetCurrentQuest();
-                if(BuildQuest.IsTaskUnderway() and cur_task.theme_id == theme_index) then
-                BuildQuest.EndEditing();
-                return;
-                end
-                local UseAbsolutePos = mouse_button=="right";
-                local ClickOnceDeploy = UseAbsolutePos;
-                local task = BuildQuest:new({theme_id=BuildQuest.cur_theme_index, task_id=task_index, step_id=1,
-                UseAbsolutePos = UseAbsolutePos, ClickOnceDeploy=ClickOnceDeploy})
-                task:Run();
-                --BuildQuest.ClosePage(true)
-                ClosePage()
+                    --[[
+                    local islocked = TaskIsLocked(task_index);
+                    if(islocked) then
+                    _guihelper.MessageBox(L"ËØ•‰ªªÂä°ËøòÊú™Ëß£ÈîÅÔºåÁõÆÂâç‰∏çÂèØÂª∫ÈÄ†ÔºÅ");
+                    return;
+                    end
+                    --]]
+
+                    local cur_task = BuildQuest.GetCurrentQuest();
+
+                    if(BuildQuest.IsTaskUnderway() and cur_task.theme_id == theme_index) then
+                        BuildQuest.EndEditing();
+                        return;
+                    end
+
+                    local UseAbsolutePos  = mouse_button == "right";
+                    local ClickOnceDeploy = UseAbsolutePos;
+
+                    local task = BuildQuest:new({
+                                    theme_id = BuildQuest.cur_theme_index, 
+                                    task_id  = task_index, 
+                                    step_id  = 1,
+                                    UseAbsolutePos  = UseAbsolutePos,
+                                    ClickOnceDeploy = ClickOnceDeploy});
+
+                    task:Run();
+                    --BuildQuest.ClosePage(true)
+                    ClosePage();
                 end
 
                 function GetQuestTriggerText()
-                local s ="";
-                local cur_task = BuildQuest.GetCurrentQuest();
-                if(BuildQuest.IsTaskUnderway() and cur_task and cur_task.theme_id == theme_index) then
-                s = L"∑≈∆˙Ω®‘Ï";
-                else
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                if(task and task:IsClickOnceDeploy()) then
-                s = L"“ªº¸ÕÍ≥…";
-                else
-                s = L"ø™ ºΩ®‘Ï";
-                end
-                end
-                return s;
+                    local s = "";
+                    local cur_task = BuildQuest.GetCurrentQuest();
+
+                    if(BuildQuest.IsTaskUnderway() and cur_task and cur_task.theme_id == theme_index) then
+                        s = L"ÊîæÂºÉÂª∫ÈÄ†";
+                    else
+                        local task = BuildQuestProvider.GetTask(theme_index,task_index);
+
+                        if(task and task:IsClickOnceDeploy()) then
+                            s = L"‰∏ÄÈîÆÂÆåÊàê";
+                        else
+                            s = L"ÂºÄÂßãÂª∫ÈÄ†";
+                        end
+                    end
+
+                    return s;
                 end
 
                 function IsUseAbsPosition()
-                local task = BuildQuestProvider.GetTask(theme_index,task_index);
-                if(task and task:IsUseAbsolutePos()) then
-                return true;
-                else
-                return false;
-                end
-                end
+                    local task = BuildQuestProvider.GetTask(theme_index,task_index);
 
+                    if(task and task:IsUseAbsolutePos()) then
+                        return true;
+                    else
+                        return false;
+                    end
+                end
 
                 function GetQuestOutBorder(index)
-                local bk="";
-                if(task_index == index) then
-                bk = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;308 128 34 34";
-                else
-                bk = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;308 89 34 34";
-                end
-                return bk;
+                    local bk = "";
+
+                    if(task_index == index) then
+                        bk = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;308 128 34 34";
+                    else
+                        bk = "Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;308 89 34 34";
+                    end
+
+                    return bk;
                 end
 
                 function TaskIsSelected(index)
-                if(task_index == index) then
-                return true;
-                else
-                return false;
-                end
+                    if(task_index == index) then
+                        return true;
+                    else
+                        return false;
+                    end
                 end
 
                 function OnFAQ()
-                ParaGlobal.ShellExecute("open", GameLogic.options.ask_for_help_url, "", "", 1);
+                    ParaGlobal.ShellExecute("open", GameLogic.options.ask_for_help_url, "", "", 1);
                 end
 
                 function QuickBuilding(name,mcmlNode)
-                local index = mcmlNode:GetAttribute("param1");
-                task_index = tonumber(index);
-                BuildQuest.QuickBuilding(theme_index,task_index, mouse_button=="right");
+                    local index = mcmlNode:GetAttribute("param1");
+                    task_index  = tonumber(index);
+
+                    BuildQuest.QuickBuilding(theme_index,task_index, mouse_button == "right");
                 end
 
                 function beShowTheLineOfOfficialAndUnofficial(index)
-                local themesDS = BuildQuestProvider.GetThemes_DS();
-                if(index == 1) then
-                return false;
-                elseif(themesDS[index] and themesDS[index - 1]) then
-                if(themesDS[index]["official"] == false and themesDS[index - 1]["official"] == true) then
-                return true;
-                else
-                return false;
-                end
-                end
-                return false;
+                    local themesDS = BuildQuestProvider.GetThemes_DS();
+
+                    if(index == 1) then
+                        return false;
+                    elseif(themesDS[index] and themesDS[index - 1]) then
+                        if(themesDS[index]["official"] == false and themesDS[index - 1]["official"] == true) then
+                            return true;
+                        else
+                            return false;
+                        end
+                    end
+
+                    return false;
                 end
 
                 function OnOpenMyTemplateFolder()
-                BuildQuest.OnOpenMyTemplateFolder();
+                    BuildQuest.OnOpenMyTemplateFolder();
                 end
 
                 function CanEditing()
-                local curTheme = GetTheme_DS(theme_index);
-                if(curTheme) then
-                if(curTheme.official) then
-                return false;
-                else
-                return true;
-                end
-                end
-                return false;
+                    local curTheme = curModelManager.GetTheme_DS(theme_index);
+
+                    if(curTheme) then
+                        if(curTheme.official) then
+                            return false;
+                        else
+                            return true;
+                        end
+                    end
+
+                    return false;
                 end
 
                 function OnChangeTaskDesc()
-                isEditing = true;
-                Page:Refresh(0.1);
+                    isEditing = true;
+                    Page:Refresh(0.1);
                 end
 
                 function OnSaveTaskDesc()
-                isEditing = false;
-                local content = Page:GetValue("content", "");
-                local desc = string.gsub(content,"\r\n","
-                <br />")
-                --_guihelper.MessageBox(desc);
-                BuildQuestProvider.OnSaveTaskDesc(theme_index,task_index,desc);
-                Page:Refresh(0.1);
+                    isEditing     = false;
+                    local content = Page:GetValue("content", "");
+                    local desc    = string.gsub(content,"\r\n","<br />");
+
+                    --_guihelper.MessageBox(desc);
+                    BuildQuestProvider.OnSaveTaskDesc(theme_index,task_index,desc);
+                    Page:Refresh(0.1);
                 end
 
                 function CreateNewTheme()
-                BuildQuest.new_theme_category_dir = "worlds/DesignHouse/blocktemplates/";
-                BuildQuest.ShowCreateNewThemePage("template");
+                    BuildQuest.new_theme_category_dir = "worlds/DesignHouse/blocktemplates/";
+                    BuildQuest.ShowCreateNewThemePage("template");
                 end
 
             ]]>
         </script>
-        <aries:window mode="thin" title='<%=L"ƒ£∞Âπ‹¿Ì"%>' style="width:636px;height:450px;" onclose="ClosePage">
+        <aries:window mode="thin" title='<%=L"Ê®°ÊùøÁÆ°ÁêÜ"%>' style="width:636px;height:450px;" onclose="ClosePage">
             <div style="width:636px;height:436px;margin-left:10px;margin-top:-4px;padding:0px;">
-                <!--<input type="button" tooltip="πÿ±’" style="position:relative;margin-left:398px;margin-top:1px;width:36px;height:36px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#218 469 36 36)" onclick="ClosePage"/>-->
+                <!--<input type="button" tooltip="ÂÖ≥Èó≠" style="position:relative;margin-left:398px;margin-top:1px;width:36px;height:36px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#218 469 36 36)" onclick="ClosePage"/>-->
                 <div style="float:left;margin-left:0px;margin-top:15px;width:117px;">
-                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=GetTheme_DS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
+                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=curModelManager.GetTheme_DS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
                         <Columns>
                             <div style="height:32px;">
                                 <!--<pe:if condition='<%= beShowTheLineOfOfficialAndUnofficial(Eval("index")) %>'>
@@ -302,7 +324,7 @@
                                 </pe:if>-->
                                 <pe:if condition='<%= Eval("name") == "empty" %>'>
                                     <div style="margin-left:35px;margin-top:1px;width:68px;height:23px;">
-                                        <input type="button" onclick="CreateNewTheme" tooltip='<%=L"µ„ª˜¥¥Ω®–¬ƒ£∞Â÷÷¿‡"%>' style="margin-left:15px;width:10px;height:10px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#501 203 10 10)" />
+                                        <input type="button" onclick="CreateNewTheme" tooltip='<%=L"ÁÇπÂáªÂàõÂª∫Êñ∞Ê®°ÊùøÁßçÁ±ª"%>' style="margin-left:15px;width:10px;height:10px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#501 203 10 10)" />
                                     </div>
                                 </pe:if>
                                 <pe:if condition='<%= Eval("name") ~= "empty" %>'>
@@ -319,13 +341,13 @@
                         <PagerTemplate AutoHidePager="true">
                             <form>
                                 <label name="page" style="height:18px;margin-left:59px;margin-top:-95px;color:#ffffff;" />
-                                <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"…œ“ª“≥"%>' style="margin-left:35px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15" />
-                                <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"œ¬“ª“≥"%>' style="margin-left:40px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15" />
+                                <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"‰∏ä‰∏ÄÈ°µ"%>' style="margin-left:35px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15" />
+                                <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip='<%=L"‰∏ã‰∏ÄÈ°µ"%>' style="margin-left:40px;margin-top:-93px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15" />
                             </form>
                         </PagerTemplate>
                     </pe:gridview>
-                    <!--<input type="button" value='<%=L"ƒ£∞Âƒø¬º"%>' onclick="OnOpenMyTemplateFolder" style="margin-left:32px;margin-top:-70px;width:68px;height:20px;font-size:12px;margin:0px;padding:0px;color:#ffffff;" class='mc_light_grey_button_with_fillet'/>-->
-                    <!--<input type="button" value='<%=L"‘⁄œﬂŒ Ã‚"%>' onclick="OnFAQ" style="margin-left:32px;margin-top:-40px;width:68px;height:20px;font-size:12px;margin:0px;" class='mc_light_grey_button_with_fillet'/>-->
+                    <!--<input type="button" value='<%=L"Ê®°ÊùøÁõÆÂΩï"%>' onclick="OnOpenMyTemplateFolder" style="margin-left:32px;margin-top:-70px;width:68px;height:20px;font-size:12px;margin:0px;padding:0px;color:#ffffff;" class='mc_light_grey_button_with_fillet'/>-->
+                    <!--<input type="button" value='<%=L"Âú®Á∫øÈóÆÈ¢ò"%>' onclick="OnFAQ" style="margin-left:32px;margin-top:-40px;width:68px;height:20px;font-size:12px;margin:0px;" class='mc_light_grey_button_with_fillet'/>-->
                 </div>
                 <div style="float:left;margin-left:10px;margin-top:5px;width:1px;height:421px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 1)" />
                 <div style="float:left;width:160px;margin-top:15px;margin-left:10px;">
@@ -334,28 +356,28 @@
                             <div style="height:32px;">
                                 <pe:if condition='<%= TaskIsSelected(Eval("index")) == true %>'>
                                     <input type="button" value='<%=Eval("name") %>' enabled="false" style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#208 89 21 21:4 4 4 4)" />
-                                    <input type="button" tooltip='<%=L"øÏÀŸΩ®‘Ï:◊Ûº¸œ‡∂‘Œª÷√, ”“º¸æ¯∂‘Œª÷√"%>' onclick="QuickBuilding" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)" />
+                                    <input type="button" tooltip='<%=L"Âø´ÈÄüÂª∫ÈÄ†:Â∑¶ÈîÆÁõ∏ÂØπ‰ΩçÁΩÆ, Âè≥ÈîÆÁªùÂØπ‰ΩçÁΩÆ"%>' onclick="QuickBuilding" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)" />
                                 </pe:if>
                                 <pe:if condition='<%= TaskIsSelected(Eval("index")) == false %>'>
                                     <input type="button" value='<%=Eval("name") %>' onclick="ChangeTask" param1='<%=Eval("index") %>' style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" />
-                                    <!--<input type="button" tooltip="øÏÀŸΩ®‘Ï" onclick="ChangeTask" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)"/>    -->
+                                    <!--<input type="button" tooltip="Âø´ÈÄüÂª∫ÈÄ†" onclick="ChangeTask" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)"/>    -->
                                 </pe:if>
                             </div>
                         </Columns>
                         <EmptyDataTemplate>
                             <div style="color:#ffffff;margin-left:20px;">
-                                <b><%=L"µ±«∞√ª”–ƒ£∞Â"%></b>
+                                <b><%=L"ÂΩìÂâçÊ≤°ÊúâÊ®°Êùø"%></b>
                             </div>
                         </EmptyDataTemplate>
                         <FetchingDataTemplate>
-                            <b><%=L"«Î…‘µ» ... "%></b>
+                            <b><%=L"ËØ∑Á®çÁ≠â ... "%></b>
                         </FetchingDataTemplate>
                         <PagerSettings Position="Bottom" height="1" />
                         <PagerTemplate AutoHidePager="true">
                             <form>
                                 <label name="page" style="height:18px;margin-left:59px;margin-top:-45px;color:#ffffff;" />
-                                <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="…œ“ª“≥" style="margin-left:35px;margin-top:-43px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15" />
-                                <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="œ¬“ª“≥" style="margin-left:40px;margin-top:-43px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15" />
+                                <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ä‰∏ÄÈ°µ" style="margin-left:35px;margin-top:-43px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15" />
+                                <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ã‰∏ÄÈ°µ" style="margin-left:40px;margin-top:-43px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15" />
                             </form>
                         </PagerTemplate>
                     </pe:gridview>
@@ -369,14 +391,14 @@
 
                         <pe:if condition='<%=not Eval("isEditing") %>'>
                             <pe:if condition='<%=CanEditing() %>'>
-                                <input type="button" name="btn_rename" tooltip='<%=L"–ﬁ∏ƒ√Ë ˆ"%>' onclick="OnChangeTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
+                                <input type="button" name="btn_rename" tooltip='<%=L"‰øÆÊîπÊèèËø∞"%>' onclick="OnChangeTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
                             </pe:if>
                             <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%=GetTaskDesc() %> </div>
                         </pe:if>
                         <pe:if condition='<%=Eval("isEditing") %>'>
-                            <input type="button" tooltip='<%=L"±£¥Ê"%>' onclick="OnSaveTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
+                            <input type="button" tooltip='<%=L"‰øùÂ≠ò"%>' onclick="OnSaveTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
                             <div style="margin:20px;margin-top:40px;" class="mc_text">
-                                <textarea name="content" EmptyText='<%=L"µ„ª˜’‚¿Ô ‰»Î(Ctrl+Vø…“‘’≥Ã˘)"%>' VerticalScrollBarStep="40" rows="10" value='<%=GetTaskDesc()%>' style="color:#cccccc;background:;">
+                                <textarea name="content" EmptyText='<%=L"ÁÇπÂáªËøôÈáåËæìÂÖ•(Ctrl+VÂèØ‰ª•Á≤òË¥¥)"%>' VerticalScrollBarStep="40" rows="10" value='<%=GetTaskDesc()%>' style="color:#cccccc;background:;">
                         </textarea>
                             </div>
 
@@ -392,14 +414,14 @@
                                             <pe:if condition='<%= TaskIsSelected(Eval("index")) == true %>'>
                                                 <div style="margin-top:3px;margin-left:7px;height:38px;width:38px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#306 127 38 38)" >
                                                     <img style="position:relative;margin-left:3px;margin-top:3px;width:32px;height:32px;margin:0px;padding:0px;" src='<%= GetTaskIcon(Eval("index")) %>'/>
-                                                    <input type="button" tooltip="µ„ª˜≤Èø¥œÍœ∏–≈œ¢" onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:3px;margin-top:3px;width:32px;height:32px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#348 90 32 32:4 4 4 4)" />
+                                                    <input type="button" tooltip="ÁÇπÂáªÊü•ÁúãËØ¶ÁªÜ‰ø°ÊÅØ" onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:3px;margin-top:3px;width:32px;height:32px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#348 90 32 32:4 4 4 4)" />
                                                     <img onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:24px;margin-top:21px;width:9px;height:12px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#372 45 9 12)" />
                                                 </div>
                                             </pe:if>
                                             <pe:if condition='<%= TaskIsSelected(Eval("index")) == false %>'>
                                                 <div style="margin-top:5px;margin-left:9px;height:34px;width:34px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#308 89 34 34)" >
                                                     <img style="position:relative;margin-left:1px;margin-top:1px;width:32px;height:32px;margin:0px;padding:0px;" src='<%= GetTaskIcon(Eval("index")) %>'/>
-                                                    <input type="button" tooltip="µ„ª˜≤Èø¥œÍœ∏–≈œ¢" onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:1px;margin-top:1px;width:32px;height:32px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#348 90 32 32:4 4 4 4)" />
+                                                    <input type="button" tooltip="ÁÇπÂáªÊü•ÁúãËØ¶ÁªÜ‰ø°ÊÅØ" onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:1px;margin-top:1px;width:32px;height:32px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#348 90 32 32:4 4 4 4)" />
                                                     <img onclick="ChangeTask" param1='<%=Eval("index") %>' style="position:relative;margin-left:22px;margin-top:19px;width:9px;height:12px;margin:0px;padding:0px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#372 45 9 12)" />
                                                 </div>
                                             </pe:if>
@@ -437,16 +459,16 @@
                                     </div>
                                 </Columns>
                                 <EmptyDataTemplate>
-                                    <b>∏√÷˜Ã‚µ±«∞√ª”–»ŒŒÒ</b>
+                                    <b>ËØ•‰∏ªÈ¢òÂΩìÂâçÊ≤°Êúâ‰ªªÂä°</b>
                                 </EmptyDataTemplate>
                                 <FetchingDataTemplate>
-                                    <b>«Î…‘µ» ... </b>
+                                    <b>ËØ∑Á®çÁ≠â ... </b>
                                 </FetchingDataTemplate>
                                 <PagerSettings Position="Bottom" height="1"/>
                                 <PagerTemplate AutoHidePager="true">
                                     <form>
-                                        <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="…œ“ª“≥" style="margin-left:-16px;margin-top:-36px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15"/>
-                                        <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="œ¬“ª“≥" style="margin-left:263px;margin-top:-36px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15"/>
+                                        <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ä‰∏ÄÈ°µ" style="margin-left:-16px;margin-top:-36px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#224 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;224 167 13 15"/>
+                                        <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ã‰∏ÄÈ°µ" style="margin-left:263px;margin-top:-36px;width:13px;height:15px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#249 149 13 15);" Normal_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 149 13 15" Pressed_BG="Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png;249 167 13 15"/>
                                     </form>
                                 </PagerTemplate>
                             </pe:gridview>-->
@@ -455,7 +477,7 @@
                     <div style="float:left;margin-left:0px;margin-top:-1px;width:330px;height:2px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 8)" />
                     <div style="margin-left:20px;margin-top:3px;">
                         <div style="margin-left:35px;margin-top:0px;color:#ffffff;">
-                            <%=L"À˘–Ë◊ ‘¥"%>
+                            <%=L"ÊâÄÈúÄËµÑÊ∫ê"%>
                         </div>
                         <div style="margin-left:24px;margin-top:-8px;">
                             <pe:gridview name="gvwMCBlock" DefaultNodeHeight="44" DataSource="<%=GetBlock_DS%>" pagesize="10" ItemsPerLine="5" style="margin-top:5px;" AllowPaging="true">
@@ -467,16 +489,16 @@
                                     </div>
                                 </Columns>
                                 <EmptyDataTemplate>
-                                    <b><%=L"∏√÷˜Ã‚µ±«∞√ª”–»ŒŒÒ"%></b>
+                                    <b><%=L"ËØ•‰∏ªÈ¢òÂΩìÂâçÊ≤°Êúâ‰ªªÂä°"%></b>
                                 </EmptyDataTemplate>
                                 <FetchingDataTemplate>
-                                    <b><%=L"«Î…‘µ» ... "%></b>
+                                    <b><%=L"ËØ∑Á®çÁ≠â ... "%></b>
                                 </FetchingDataTemplate>
                                 <PagerSettings Position="Bottom" height="1" />
                                 <PagerTemplate AutoHidePager="true">
                                     <form>
-                                        <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="…œ“ª“≥" style="margin-left:-18px;margin-top:-90px;width:16px;height:16px;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#294 486 16 16)" />
-                                        <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="œ¬“ª“≥" style="margin-left:262px;margin-top:-90px;width:16px;height:16px;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#294 470 16 16)" />
+                                        <input type="button" name="pre" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ä‰∏ÄÈ°µ" style="margin-left:-18px;margin-top:-90px;width:16px;height:16px;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#294 486 16 16)" />
+                                        <input type="button" name="next" invisibleondisabled="false" zorder=2 animstyle="23" tooltip="‰∏ã‰∏ÄÈ°µ" style="margin-left:262px;margin-top:-90px;width:16px;height:16px;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#294 470 16 16)" />
                                     </form>
                                 </PagerTemplate>
                             </pe:gridview>
@@ -485,9 +507,9 @@
                             <input type="button" value='<%=GetQuestTriggerText() %>' style="margin-left:118px;margin-top:-34px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
                         </pe:if>
                         <pe:if condition='<%= CurTaskIsLocked() == true %>'>
-                            <input type="button" tooltip="Ω®÷˛ªπŒ¥Ω‚À¯£¨≤ªƒ‹Ω®‘Ï" value="»ŒŒÒÀ¯∂®" style="margin-left:118px;margin-top:-34px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" enabled="false"/>
+                            <input type="button" tooltip="Âª∫Á≠ëËøòÊú™Ëß£ÈîÅÔºå‰∏çËÉΩÂª∫ÈÄ†" value="‰ªªÂä°ÈîÅÂÆö" style="margin-left:118px;margin-top:-34px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" enabled="false"/>
                         </pe:if>-->
-                        <input type="button" value='<%=GetQuestTriggerText() %>' tooltip='<%=L"◊Ûº¸œ‡∂‘»ÀŒÔ;”“º¸Œ™æ¯∂‘Œª÷√"%>' style="margin-left:118px;margin-top:-44px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
+                        <input type="button" value='<%=GetQuestTriggerText() %>' tooltip='<%=L"Â∑¶ÈîÆÁõ∏ÂØπ‰∫∫Áâ©;Âè≥ÈîÆ‰∏∫ÁªùÂØπ‰ΩçÁΩÆ"%>' style="margin-left:118px;margin-top:-44px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
                     </div>
                 </div>
             </div>

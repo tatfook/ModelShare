@@ -11,9 +11,11 @@ local ModelShare = commonlib.gettable("Mod.ModelShare");
 ]]
 NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
+NPL.load("(gl)Mod/ModelShare/ModelManager.lua");
 
-local loginMain   = commonlib.gettable("Mod.WorldShare.login.loginMain");
-local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
+local loginMain    = commonlib.gettable("Mod.WorldShare.login.loginMain");
+local ShareWindow  = commonlib.gettable("Mod.ModelShare.ShareWindow");
+local ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
 
 local ModelShare = commonlib.inherit(commonlib.gettable("Mod.ModBase"),commonlib.gettable("Mod.ModelShare"));
 
@@ -48,6 +50,14 @@ function ModelShare:init()
 		end
 		return id;
 	end);
+
+	 GameLogic.GetFilters():add_filter("BuildQuest.ShowPage",function()
+		local curModelManager = ModelManager:new();
+		curModelManager:SetInstance();
+		curModelManager:ShowPage();
+
+		return false;
+	 end)
 end
 
 function ModelShare:OnLogin()
