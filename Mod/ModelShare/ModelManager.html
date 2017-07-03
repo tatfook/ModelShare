@@ -384,12 +384,22 @@
                 </div>
                 <div style="float:left;margin-left:-10px;margin-top:5px;width:1px;height:421px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 1)" />
                 <div style="float:left;margin-left:0px;margin-top:0px;">
-                    <div style="margin-left:1px;margin-top:1px;height:260px;">
-                        <input type="button" value='<%=GetTaskName()%>' name="task_name_btn" style="position:relative;margin-left:100px;margin-top:12px;height:20px;width:110px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" enabled="false" />
+                    <div style="color:#FFFFFF;textcolor:#FFFFFF;margin-left:1px;margin-top:1px;height:260px;">
+                        <div>
+                            模板名称
+                        </div>
+                        <div>模板编号：12345678910</div>
+                        <div>创建日期：2017-06-10</div>
+                        <div>方块数量：65536</div>
+                        <div>体积：128*128*128</div>
+                        <div>用户信息：用户名</div>
+                        <div>分享模板：是</div>
+                        
+
+                        <!--<input type="button" value='<%=GetTaskName()%>' name="task_name_btn" style="position:relative;margin-left:100px;margin-top:12px;height:20px;width:110px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" enabled="false" />-->
                         <!--<img style="position:relative;margin-left:70px;margin-top:45px;height:160px;width:160px;" src='<%= GetTaskImage() %>' />-->
 
-
-                        <pe:if condition='<%=not Eval("isEditing") %>'>
+                        <!--<pe:if condition='<%=not Eval("isEditing") %>'>
                             <pe:if condition='<%=CanEditing() %>'>
                                 <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="OnChangeTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
                             </pe:if>
@@ -402,7 +412,7 @@
                         </textarea>
                             </div>
 
-                        </pe:if>
+                        </pe:if>-->
                         <div style="position:relative;margin-top:210px;margin-left:24px;">
                             <!--<pe:gridview name="gvwMCTask" DefaultNodeHeight="34" DataSource="<%=GetTask_DS%>" pagesize="5" ItemsPerLine="5" style="margin-top:1px;" AllowPaging="true">
                                 <Columns>

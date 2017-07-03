@@ -21,11 +21,13 @@ local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.M
 
 function ModelManager:ctor()
 	BuildQuest.OnInit(BuildQuest.template_theme_index,BuildQuest.template_task_index);
-
 	self.themesDS = BuildQuestProvider.GetThemes_DS();
-	self.themesDS[#self.themesDS + 1] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="本地全局模板",image="",};
-	self.themesDS[#self.themesDS + 1] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="本地存档模板",image="",};
-	self.themesDS[#self.themesDS + 1] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="云模板",image="",};
+
+	--self.themesDS = {};
+	self.themesDS[1] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="本地全局模板",image="",};
+	self.themesDS[2] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="本地存档模板",image="",};
+	self.themesDS[3] = {order=10,foldername="bendi",official=false,icon="",unlock_coins="0",name="云模板",image="",};
+	self.themesDS[4] = {name="empty",official=false,};
 end
 
 function ModelManager:SetInstance()
