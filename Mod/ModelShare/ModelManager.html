@@ -22,6 +22,14 @@
                 --local theme_index = BuildQuest.cur_theme_index;
                 local theme_index = BuildQuest.template_theme_index
                 local task_index  = BuildQuest.cur_task_index;
+                
+                function screenshot()
+                    if(curModelManager.screenshot) then
+                        return curModelManager.screenshot;
+                    else
+                        return false;
+                    end
+                end
 
                 function RestEditing()
                     isEditing = false;
@@ -206,7 +214,7 @@
                         local task = BuildQuestProvider.GetTask(theme_index,task_index);
 
                         if(task and task:IsClickOnceDeploy()) then
-                            s = L"一键完成";
+                            s = L"使用";
                         else
                             s = L"开始建造";
                         end
@@ -350,16 +358,21 @@
                     <!--<input type="button" value='<%=L"在线问题"%>' onclick="OnFAQ" style="margin-left:32px;margin-top:-40px;width:68px;height:20px;font-size:12px;margin:0px;" class='mc_light_grey_button_with_fillet'/>-->
                 </div>
                 <div style="float:left;margin-left:10px;margin-top:5px;width:1px;height:421px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 1)" />
-                <div style="float:left;width:160px;margin-top:15px;margin-left:10px;">
+                <div style="float:left;width:190px;margin-top:15px;margin-left:10px;">
                     <pe:gridview name="gvwMCTask" DefaultNodeHeight="32" DataSource="<%=GetTask_DS%>" pagesize="10" ItemsPerLine="1" AllowPaging="true">
                         <Columns>
                             <div style="height:32px;">
                                 <pe:if condition='<%= TaskIsSelected(Eval("index")) == true %>'>
+                                    <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
                                     <input type="button" value='<%=Eval("name") %>' enabled="false" style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#208 89 21 21:4 4 4 4)" />
-                                    <input type="button" tooltip='<%=L"快速建造:左键相对位置, 右键绝对位置"%>' onclick="QuickBuilding" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)" />
+                                    <button style="width:16.86px;height:23px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#403 72 11 15)"></button>
+                                    <button style=""></button>
+                                    <!--<input type="button" tooltip='<%=L"快速建造:左键相对位置, 右键绝对位置"%>' onclick="QuickBuilding" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)" />-->
                                 </pe:if>
                                 <pe:if condition='<%= TaskIsSelected(Eval("index")) == false %>'>
+                                    <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
                                     <input type="button" value='<%=Eval("name") %>' onclick="ChangeTask" param1='<%=Eval("index") %>' style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" />
+                                    <button style="width:16.86px;height:23px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#403 72 11 15)"></button>
                                     <!--<input type="button" tooltip="快速建造" onclick="ChangeTask" param1='<%=Eval("index") %>' style="margin-left:5px;margin-top:5px;width:18px;height:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#51 420 18 16)"/>    -->
                                 </pe:if>
                             </div>
@@ -386,7 +399,7 @@
                 <div style="float:left;margin-left:0px;margin-top:0px;">
                     <div style="color:#FFFFFF;textcolor:#FFFFFF;margin-left:1px;margin-top:1px;height:260px;">
                         <div>
-                            模板名称
+                            <%=GetTaskName()%>
                         </div>
                         <div>模板编号：12345678910</div>
                         <div>创建日期：2017-06-10</div>
@@ -399,20 +412,18 @@
                         <!--<input type="button" value='<%=GetTaskName()%>' name="task_name_btn" style="position:relative;margin-left:100px;margin-top:12px;height:20px;width:110px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" enabled="false" />-->
                         <!--<img style="position:relative;margin-left:70px;margin-top:45px;height:160px;width:160px;" src='<%= GetTaskImage() %>' />-->
 
-                        <!--<pe:if condition='<%=not Eval("isEditing") %>'>
+                        <pe:if condition='<%=not Eval("isEditing") %>'>
                             <pe:if condition='<%=CanEditing() %>'>
-                                <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="OnChangeTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
+                                <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="OnChangeTaskDesc" style="position:relative;margin-left:5px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
                             </pe:if>
                             <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%=GetTaskDesc() %> </div>
                         </pe:if>
                         <pe:if condition='<%=Eval("isEditing") %>'>
-                            <input type="button" tooltip='<%=L"保存"%>' onclick="OnSaveTaskDesc" style="position:relative;margin-left:5px;margin-top:46px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
-                            <div style="margin:20px;margin-top:40px;" class="mc_text">
-                                <textarea name="content" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>' VerticalScrollBarStep="40" rows="10" value='<%=GetTaskDesc()%>' style="color:#cccccc;background:;">
-                        </textarea>
+                            <input type="button" tooltip='<%=L"保存"%>' onclick="OnSaveTaskDesc" style="position:relative;margin-left:5px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
+                            <div style="margin:20px;" class="mc_text">
+                                <textarea name="content" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>' VerticalScrollBarStep="10" rows="5" value='<%=GetTaskDesc()%>' style="color:#cccccc;background:;"></textarea>
                             </div>
-
-                        </pe:if>-->
+                        </pe:if>
                         <div style="position:relative;margin-top:210px;margin-left:24px;">
                             <!--<pe:gridview name="gvwMCTask" DefaultNodeHeight="34" DataSource="<%=GetTask_DS%>" pagesize="5" ItemsPerLine="5" style="margin-top:1px;" AllowPaging="true">
                                 <Columns>
@@ -486,7 +497,7 @@
                     </div>
                     <div style="float:left;margin-left:0px;margin-top:-1px;width:330px;height:2px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 8)" />
                     <div style="margin-left:20px;margin-top:3px;">
-                        <div style="margin-left:35px;margin-top:0px;color:#ffffff;">
+                        <!--<div style="margin-left:35px;margin-top:0px;color:#ffffff;">
                             <%=L"所需资源"%>
                         </div>
                         <div style="margin-left:24px;margin-top:-8px;">
@@ -513,13 +524,22 @@
                                 </PagerTemplate>
                             </pe:gridview>
                         </div>
-                        <!--<pe:if condition='<%= CurTaskIsLocked() == false%>'>
+                        <pe:if condition='<%= CurTaskIsLocked() == false%>'>
                             <input type="button" value='<%=GetQuestTriggerText() %>' style="margin-left:118px;margin-top:-34px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
                         </pe:if>
                         <pe:if condition='<%= CurTaskIsLocked() == true %>'>
                             <input type="button" tooltip="建筑还未解锁，不能建造" value="任务锁定" style="margin-left:118px;margin-top:-34px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" enabled="false"/>
                         </pe:if>-->
-                        <input type="button" value='<%=GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-left:118px;margin-top:-44px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
+
+                        <pe:if condition="<%= screenshot()%>">
+                            <img src="<%= screenshot()%>" alt="Alternate Text" />
+                        </pe:if>
+                        <pe:if condition="<%= not screenshot()%>">
+                            <div style="width: 200px;height: 150px;background-color:#FFFFFF;textcolor:black;color:black">
+                                暂无截图
+                            </div>
+                        </pe:if>
+                        <input type="button" value='<%=GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-left:118px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" onclick="StartBuild" />
                     </div>
                 </div>
             </div>
