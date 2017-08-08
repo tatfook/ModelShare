@@ -51,13 +51,13 @@ function ModelShare:init()
 		return id;
 	end);
 
-	 GameLogic.GetFilters():add_filter("BuildQuest.ShowPage",function()
+	GameLogic.GetFilters():add_filter("BuildQuest.ShowPage",function()
 		local curModelManager = ModelManager:new();
 		curModelManager:SetInstance();
 		curModelManager:ShowPage();
 
 		return false;
-	 end)
+	end)
 end
 
 function ModelShare:OnLogin()

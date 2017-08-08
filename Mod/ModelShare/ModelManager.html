@@ -55,9 +55,12 @@
 
                     --BuildQuest.cur_theme_index = index;
                     BuildQuest.template_theme_index = index;
-                    BuildQuest.OnInit(BuildQuest.template_theme_index,1);
+                    echo(BuildQuest.template_theme_index)
+
+                    ModelManager.OnInit(BuildQuest.template_theme_index,1);
                     task_index = BuildQuest.cur_task_index;
                     RestEditing();
+                    
                     Page:Refresh(0.1);
                 end
 
@@ -360,7 +363,7 @@
             <div style="width:636px;height:436px;margin-left:10px;margin-top:-4px;padding:0px;">
                 <!--<input type="button" tooltip="关闭" style="position:relative;margin-left:398px;margin-top:1px;width:36px;height:36px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Desktop/Inventory_32bits.png#218 469 36 36)" onclick="ClosePage"/>-->
                 <div style="float:left;margin-left:0px;margin-top:15px;width:117px;">
-                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=curModelManager.GetTheme_DS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
+                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=curModelManager.themesDS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
                         <Columns>
                             <div style="height:32px;">
                                 <!--<pe:if condition='<%= beShowTheLineOfOfficialAndUnofficial(Eval("index")) %>'>
