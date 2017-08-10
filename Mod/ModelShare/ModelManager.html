@@ -288,7 +288,7 @@
                 end
 
                 function CanEditing()
-                    local curTheme = curModelManager.GetTheme_DS(theme_index);
+                    local curTheme = curModelManager:GetTheme_DS(theme_index);
 
                     if(curTheme) then
                         if(curTheme.official) then
