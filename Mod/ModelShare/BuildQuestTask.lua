@@ -12,45 +12,47 @@ local ModelBuildQuest = commonlib.gettable("Mod.ModelShare.BuildQuest");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestTask.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/API/UserProfile.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/HelpPage.lua");
 
 local BuildQuest              = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
 local BuildQuestProvider      = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
 local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
+local HelpPage                = commonlib.gettable("MyCompany.Aries.Game.Tasks.HelpPage");
+local UserProfile             = commonlib.gettable("MyCompany.Aries.Creator.Game.API.UserProfile");
 
-local ModelBuildQuest = commonlib.inhert(nil, commonlib.gettable("Mod.ModelShare.BuildQuest"));
+local ModelBuildQuest = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.BuildQuest"));
 
-function BuildQuest:ctor()
-
+function ModelBuildQuest:ctor()
+	ModelBuildQuestProvider = ModelBuildQuestProvider:new();
 end
 
-function BuildQuest:Init(theme_index, task_index)
-	--echo("HELPHELPHELPHELPHELPHELPHELPHELPHELPHELP")
+function ModelBuildQuest:Init(theme_index, task_index)
 	echo("HelpPage.cur_category")
 	echo(HelpPage.cur_category)
 	--echo(HelpPage.task_index)
+
 	if(HelpPage.cur_category and (HelpPage.cur_category == "command" or HelpPage.cur_category == "shortcutkey")) then
 		return;
 	end
 
 	ModelBuildQuestProvider:Init(); --[[last work position]]
-	BuildQuest.cur_theme_index = theme_index or BuildQuest.cur_theme_index or 1;
-
-	local user = UserProfile.GetUser();
-	--if(user) then
-		--user:ResetBuildProgress(BuildQuest.cur_theme_index)
-	--end
+	self.cur_theme_index = theme_index or BuildQuest.cur_theme_index or 1;
 
 	if(HelpPage.cur_category and HelpPage.cur_category == "tutorial") then
-		BuildQuest.cur_task_index = BuildQuest.GetCurrentFinishedTaskIndex(nil,HelpPage.cur_category);
+		self.cur_task_index = BuildQuest.GetCurrentFinishedTaskIndex(nil,HelpPage.cur_category);
 	else
-		BuildQuest.cur_task_index = 1;
+		self.cur_task_index = 1;
 	end
-	
+
+	echo(self.cur_task_index);
+
 	if(task_index) then
-		BuildQuest.cur_task_index = task_index;
+		self.cur_task_index = task_index;
 	end
 	
-	local cur_theme_taskDS = BuildQuestProvider.GetTasks_DS(BuildQuest.cur_theme_index,HelpPage.cur_category);
+	local cur_theme_taskDS = ModelBuildQuestProvider:GetTasks_DS(self.cur_theme_index, HelpPage.cur_category);
+
 	if(cur_theme_taskDS and BuildQuest.cur_task_index > #cur_theme_taskDS) then
 		BuildQuest.cur_task_index = #cur_theme_taskDS;
 	end

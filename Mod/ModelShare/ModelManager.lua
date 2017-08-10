@@ -10,23 +10,23 @@ local ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/HelpPage.lua");
-NPL.load("(gl)script/apps/Aries/Creator/Game/API/UserProfile.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
 
 local loginMain               = commonlib.gettable("Mod.WorldShare.login.loginMain");
-local HelpPage                = commonlib.gettable("MyCompany.Aries.Game.Tasks.HelpPage");
-local UserProfile             = commonlib.gettable("MyCompany.Aries.Creator.Game.API.UserProfile");
-local ModelBuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest"):new();
-local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider"):new();
+local ModelBuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest");
+local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
 
 local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ModelManager"));
 
 function ModelManager:ctor()
+	ModelBuildQuest         = ModelBuildQuest:new();
+	ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+
 	ModelBuildQuest:Init();
 
 	self.themesDS = ModelBuildQuestProvider:GetThemes_DS();
+
 	echo("self.themesDS")
 	echo(self.themesDS)
 --	self.themesDS[1] = {order=1,foldername="global",official=false,icon="",unlock_coins="0",name="本地全局模板",image="",};
