@@ -19,16 +19,16 @@ local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestPro
 
 local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ModelManager"));
 
+ModelManager.isEditing = false;
+
 function ModelManager:ctor()
-	ModelBuildQuest         = ModelBuildQuest:new();
-	ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+	--ModelBuildQuest:Init();
 
-	ModelBuildQuest:Init();
+	curModelBuildQuestProvider = ModelBuildQuestProvider:new();
+	--self.themesDS              = curModelBuildQuestProvider:GetThemes_DS();
 
-	self.themesDS = ModelBuildQuestProvider:GetThemes_DS();
-
-	echo("self.themesDS")
-	echo(self.themesDS)
+	--echo("self.themesDS")
+	--echo(self.themesDS)
 --	self.themesDS[1] = {order=1,foldername="global",official=false,icon="",unlock_coins="0",name="本地全局模板",image="",};
 --	self.themesDS[2] = {order=2,foldername="local" ,official=false,icon="",unlock_coins="0",name="本地存档模板",image="",};
 --	self.themesDS[3] = {order=3,foldername="cloud" ,official=false,icon="",unlock_coins="0",name="云模板",image="",};
@@ -62,6 +62,18 @@ function ModelManager:SetPage()
 	self.page = document:GetPageCtrl();
 end
 
+function ModelManager.GetPage()
+	if(ModelManager.curInstance) then
+		return ModelManager.curInstance.page;
+	end
+end
+
+function ModelManager.Refresh()
+	if(ModelManager.curInstance) then
+		ModelManager.curInstance.page:Refresh(0.01);
+	end
+end
+
 function ModelManager:OnClose()
 	if(self.page) then
 		self.page:CloseWindow();
@@ -70,12 +82,198 @@ function ModelManager:OnClose()
 	ModelManager.curInstance = nil;
 end
 
-function ModelManager:GetTheme_DS(index)
-    local themesDS = ModelBuildQuestProvider:GetThemes_DS();
+function ModelManager.ClosePage()
+	if(ModelManager.curInstance) then
+		ModelManager.curInstance:OnClose();
+	end
+end
+
+function ModelManager.GetTheme_DS(index)
+    local themesDS = curModelBuildQuestProvider:GetThemes_DS();
 	
     if(not index) then
         return #themesDS;
     else
         return themesDS[index];
     end
+end
+
+function ModelManager.GetTask_DS(index)
+    local tasksDS = curModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
+
+    if(not index) then
+        return 0;--#tasksDS;
+    else
+        return tasksDS[index];
+    end
+end
+
+function ModelManager.GetTaskName()
+    local task = curModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+
+    if(task) then
+        return task.name or "";
+    else
+        return "";
+    end
+end
+
+function ModelManager.GetTaskDesc()
+    local task = curModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+
+    local desc = "";
+
+    if(task) then
+        desc = task.desc;
+    end
+
+    return desc;
+end
+
+function ModelManager.TaskIsLocked(index)
+    if(index > ModelBuildQuest.cur_task_index) then
+        return true;
+    else
+        return false;
+    end
+end
+
+function ModelManager.CreateNewTheme()
+    ModelBuildQuest.new_theme_category_dir = "worlds/DesignHouse/blocktemplates/";
+    ModelBuildQuest:ShowCreateNewThemePage("template");
+end
+
+function ModelManager.GetCurThemeIndex()
+    return ModelBuildQuest.template_theme_index;
+end
+
+function ModelManager.ChangeTheme(name, mcmlNode)
+    local index = mcmlNode:GetAttribute("param1");
+    index       = tonumber(index);
+
+    --BuildQuest.cur_theme_index = index;
+    ModelBuildQuest.template_theme_index = index;
+    --echo(ModelBuildQuest.template_theme_index)
+
+    ModelBuildQuest:OnInit(ModelBuildQuest.template_theme_index, 1);
+    task_index = ModelBuildQuest.cur_task_index;
+	
+	if(ModelManager.curInstance) then
+		ModelManager.curInstance.RestEditing();
+	end
+
+    ModelManager.Refresh();
+end
+
+function ModelManager.RestEditing()
+	isEditing = false;
+end
+
+function ModelManager.TaskIsSelected(index)
+    if(ModelBuildQuest.cur_task_index == index) then
+        return true;
+    else
+        return false;
+    end
+end
+
+function ModelManager.ChangeTask(name, mcmlNode)
+    local index = mcmlNode:GetAttribute("param1");
+
+    ModelBuildQuest.cur_task_index      = tonumber(index);
+    ModelBuildQuest.template_task_index = tonumber(index);
+
+	if(ModelManager.curInstance) then
+		ModelManager.curInstance.RestEditing();
+	end
+
+	ModelManager.Refresh();
+end
+
+function ModelManager.CanEditing()
+	local curTheme
+
+	if(ModelManager.curInstance) then
+		curTheme = ModelManager.curInstance.GetTheme_DS(ModelBuildQuest.template_theme_index);
+	end
+
+    if(curTheme) then
+        if(curTheme.official) then
+            return false;
+        else
+            return true;
+        end
+    end
+
+    return false;
+end
+
+function ModelManager.OnChangeTaskDesc()
+    ModelManager.isEditing = true;
+	ModelManager.Refresh();
+end
+
+function ModelManager.OnSaveTaskDesc()
+    ModelManager.isEditing = false;
+
+    local content = ModelManager.GetPage():GetValue("content", "");
+    local desc    = string.gsub(content,"\r\n","<br />");
+
+    --_guihelper.MessageBox(desc);
+    curModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
+    ModelManager.Refresh();
+end
+
+function ModelManager.screenshot()
+    return false;
+end
+
+function ModelManager.GetQuestTriggerText()
+    local s        = "";
+    local cur_task = ModelBuildQuest:GetCurrentQuest();
+
+    if(ModelBuildQuest:IsTaskUnderway() and cur_task and cur_task.theme_id == theme_index) then
+        s = L"放弃建造";
+    else
+        local task = curModelBuildQuestProvider.GetTask(theme_index, task_index);
+
+        if(task and task:IsClickOnceDeploy()) then
+            s = L"使用";
+        else
+            s = L"开始建造";
+        end
+    end
+
+    return s;
+end
+
+function ModelManager.StartBuild()
+    --[[
+		local islocked = TaskIsLocked(task_index);
+		if(islocked) then
+		_guihelper.MessageBox(L"该任务还未解锁，目前不可建造！");
+		return;
+		end
+    --]]
+
+    local cur_task = ModelBuildQuest:GetCurrentQuest();
+
+    if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == theme_index) then
+        ModelBuildQuest:EndEditing();
+        return;
+    end
+
+    local UseAbsolutePos  = mouse_button == "right";
+    local ClickOnceDeploy = UseAbsolutePos;
+
+    local task = ModelBuildQuest:new({
+                    theme_id = BuildQuest.cur_theme_index, 
+                    task_id  = task_index, 
+                    step_id  = 1,
+                    UseAbsolutePos  = UseAbsolutePos,
+                    ClickOnceDeploy = ClickOnceDeploy});
+
+    task:Run();
+    --BuildQuest.ClosePage(true)
+    ClosePage();
 end

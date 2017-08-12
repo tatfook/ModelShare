@@ -23,72 +23,54 @@ local TaskClass               = commonlib.gettable("Mod.ModelShare.TaskClass");
 
 local ModelBuildQuestProvider = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.BuildQuestProvider"));
 
-local tasks            = {};
-local themes           = {};
-local themesDS         = {};
-local block_wiki_tasks = {};
-local myThemePath      = "worlds/DesignHouse/blocktemplates/";
+ModelBuildQuestProvider.tasks            = {};
+ModelBuildQuestProvider.themes           = {};
+ModelBuildQuestProvider.themesDS         = {};
+ModelBuildQuestProvider.localthemesDS    = {};
+ModelBuildQuestProvider.block_wiki_tasks = {};
+ModelBuildQuestProvider.globalThemePath  = "worlds/DesignHouse/blocktemplates/";
+ModelBuildQuestProvider.localThemePath   = "";
 
-local categoryPaths = {
+ModelBuildQuestProvider.categoryPaths = {
 	["template"]  = "worlds/DesignHouse/blocktemplates/",
-	["tutorial"]  = "config/Aries/creator/blocktemplates/buildingtask/",
-	["blockwiki"] = "config/Aries/creator/blocktemplates/blockwiki/",
 };
 
-local categoryDS = {
+ModelBuildQuestProvider.categoryDS = {
 	["template"] = {
 		themes = {},themesDS = {},themesType = {},beOfficial = false,
-	},
-	["tutorial"] = {
-		themes = {},themesDS = {},themesType = {},beOfficial = true,
-	},
-	["blockwiki"] = {
-		themes = {},themesDS = {},themesType = {},beOfficial = true,
 	},
 };
 
 function ModelBuildQuestProvider:ctor()
-end
-
-function ModelBuildQuestProvider:Init()
+	echo("Init BuildQuestProvider");
+	ModelBuildQuestProvider.localThemePath = "worlds/DesignHouse";
 	self:LoadFromFile();
-
-	if(self.is_inited) then
-		return
-	end
-
-	self.is_inited = true;
 end
 
 function ModelBuildQuestProvider:LoadFromFile(filename)
-	if(not self.NeedRefreshDS) then
-		return;
-	end
+	ModelBuildQuestProvider.themes           = {};
+	ModelBuildQuestProvider.themesDS         = {};
+	ModelBuildQuestProvider.localthemesDS    = {};
 
-	themes        = {};
-	themesDS      = {};
-	localthemesDS = {};
-
-	for key, path in pairs(categoryPaths) do
-		categoryDS[key]["themes"]     = {};
-		categoryDS[key]["themesDS"]   = {};
-		categoryDS[key]["themesType"] = {};
+	for key, path in pairs(ModelBuildQuestProvider.categoryPaths) do
+		ModelBuildQuestProvider.categoryDS[key]["themes"]     = {};
+		ModelBuildQuestProvider.categoryDS[key]["themesDS"]   = {};
+		ModelBuildQuestProvider.categoryDS[key]["themesType"] = {};
 
 		self:LoadFromTemplate(key, path);
 	end
 end
 
 function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
-	echo(themeKey)
 	if(themeKey == "template") then
-		categoryDS[themeKey]["themes"]   = themes;
-		categoryDS[themeKey]["themesDS"] = themesDS;
+		ModelBuildQuestProvider.categoryDS[themeKey]["themes"]   = ModelBuildQuestProvider.themes;
+		ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"] = ModelBuildQuestProvider.themesDS;
 	end
 	
-	local cur_themes     = categoryDS[themeKey]["themes"];
-	local cur_themesDS   = categoryDS[themeKey]["themesDS"];
-	local cur_themesType = categoryDS[themeKey]["themesType"];
-	local beOfficial     = categoryDS[themeKey]["beOfficial"];
+	local cur_themes     = ModelBuildQuestProvider.categoryDS[themeKey]["themes"];
+	local cur_themesDS   = ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"];
+	local cur_themesType = ModelBuildQuestProvider.categoryDS[themeKey]["themesType"];
+	local beOfficial     = ModelBuildQuestProvider.categoryDS[themeKey]["beOfficial"];
 
 	--BuildQuestProvider.PrepareGlobalTemplateDir();
 	--直接使用 worlds/DesignHouse/blocktemplates/
@@ -96,7 +78,6 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 	local hasOldGlobalFiles;
 
 	local output = self:GetFiles(themePath, function (msg)
-		echo(msg, true);
 		if(msg.filesize == 0 or string.match(msg.filename,"%.zip$")) then
 			-- folder or zip file
 			return true;
@@ -106,31 +87,24 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		end
 	end, "*.*");
 
-	echo("hasOldGlobalFiles");
-	echo(hasOldGlobalFiles);
-
 	if(hasOldGlobalFiles and themeKey == "template") then
 		--compatible
-		self:TranslateGlobalTemplateToBuildingTask();
+		self:TranslateGlobalTemplateToBuildingTask(true);
 	end
 
-	echo("----------------")
-	--echo(themeKey)
-	--echo(output,true)
-	echo("----------------")
-
-	for key, themeitem in ipairs(output) do
-		local theme_name     = string.match(themeitem, "^(.*).zip$");
+	------------------------------------------------------------------------------------------
+	for _, theme_item in ipairs(output) do
+		local theme_name     = string.match(theme_item, "^(.*).zip$");
 		local isThemeZipFile = false;
 
 		if(theme_name) then
-			local filename = themePath .. themeitem;
+			local filename = themePath .. theme_item;
 
 			ParaAsset.OpenArchive(filename, true);
 
 			isThemeZipFile = true;
 		else
-			theme_name = themeitem;
+			theme_name = theme_item;
 		end
 		
 		local theme_path      = themePath .. theme_name .. "/";
@@ -271,6 +245,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		end
 	end
 
+	---------------------------------------------------------------------------------------------------
 	for i=1, #cur_themes do
 		cur_themes[i].id = i;
 	end
@@ -295,8 +270,8 @@ function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
 		local filename2 = b.filename;
 
 		for i=1, math.min(#filename1, #filename2) do
-			local c1 = string_byte(filename1, i);
-			local c2 = string_byte(filename2, i);
+			local c1 = string.byte(filename1, i);
+			local c2 = string.byte(filename2, i);
 
 			if(c1 < c2) then
 				return true;
@@ -318,16 +293,16 @@ function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
 end
 
 function ModelBuildQuestProvider:GetThemes_DS(themeKey)
-	if(not next(themesDS)) then
-		self:Init();
+	if(not next(ModelBuildQuestProvider.themesDS)) then
+		return {};
 	end
 
 	local ds;
 
 	if(themeKey) then
-		ds = categoryDS[themeKey]["themesDS"]
+		ds = ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"]
 	else
-		ds = themesDS;
+		ds = ModelBuildQuestProvider.themesDS;
 	end
 
 	return ds;
@@ -335,8 +310,6 @@ end
 
 -- get the tasks information. 
 function ModelBuildQuestProvider:GetTasks_DS(theme_id, category)
-	self:Init();
-
 	local theme = self:GetTheme(theme_id, category);
 
 	if(not theme) then
@@ -358,27 +331,37 @@ function ModelBuildQuestProvider:GetTheme(theme_id, category)
 	return cur_themes[theme_id or 1];
 end
 
+function ModelBuildQuestProvider:GetTask(theme_id, task_id,category)
+	local theme = self:GetTheme(theme_id, category);
+
+	if(theme) then
+		return theme:GetTask(task_id);
+	end
+end
+
 -- to be compatible with old file structure. we will need to move from old template position. 
 -- @param bDeleteOldFile: whether we will delete old files
 function ModelBuildQuestProvider:TranslateGlobalTemplateToBuildingTask(bDeleteOldFile)
 	--local allTemplate = BlockTemplatePage.GetAllTemplatesDS();
-	local globalTemplate = self:GetFiles(myThemePath, function (msg)
+	local globalThemePath = ModelBuildQuestProvider.globalThemePath;
+
+	local globalTemplate = self:GetFiles(globalThemePath, function (msg)
 		return string.match(msg.filename,"%.blocks%.xml$") ~= nil;
 	end);
 
 	LOG.std(nil, "info", "TranslateGlobalTemplateToBuildingTask", "%d files translated", #globalTemplate);
-	
+
 	for i = 1,#globalTemplate do
-		--local file = globalTemplate[i];
 		local filename = string.gsub(globalTemplate[i],".blocks.xml","");
-		
-		local srcpath = string.format("%s%s.blocks.xml",myThemePath,filename);
-		local despath = string.format("%s/%s.blocks.xml",global_dir_default..filename,filename);
+
+		local srcpath = string.format("%s%s.blocks.xml", globalThemePath, filename);
+		local despath = string.format("%s/%s.blocks.xml", globalThemePath .. commonlib.Encoding.DefaultToUtf8(filename), commonlib.Encoding.DefaultToUtf8(filename));
 
 		if(not ParaIO.DoesFileExist(despath, false)) then
 			ParaIO.CopyFile(srcpath, despath, true);
-			local taskfilename   = string.format("%s/%s.xml",global_dir_default..filename,filename);
-			local blocksfilename = string.format("%s/%s.blocks.xml",global_dir_utf8..commonlib.Encoding.DefaultToUtf8(filename),commonlib.Encoding.DefaultToUtf8(filename));
+
+			local taskfilename   = string.format("%s/%s.xml", globalThemePath .. filename, filename);
+			local blocksfilename = despath;
 
 			local xmlRoot = ParaXML.LuaXML_ParseFile(commonlib.Encoding.Utf8ToDefault(blocksfilename));
 
@@ -402,6 +385,34 @@ function ModelBuildQuestProvider:TranslateGlobalTemplateToBuildingTask(bDeleteOl
 	end
 
 	if(bDeleteOldFile) then
-		ParaIO.DeleteFile(myThemePath.."*.jpg");
+		ParaIO.DeleteFile(globalThemePath .. "*.jpg");
 	end
+end
+
+function ModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc)
+	local task = self:GetTask(theme_index, task_index);
+
+    if(task) then
+        task.desc = desc;
+
+		local step           = task:GetStep(1);
+		local taskfilename   = task.filepath;
+		local taskname       = task.name;
+		local blocksfilename = step.src;
+
+		local xmlRoot = ParaXML.LuaXML_ParseFile(commonlib.Encoding.Utf8ToDefault(blocksfilename));
+
+		if(xmlRoot) then
+			local node = commonlib.XPath.selectNode(xmlRoot, "/pe:blocktemplate/pe:blocks");
+
+			if(node and node[1]) then
+				local blocks = NPL.LoadTableFromString(node[1]);
+
+				if(blocks and #blocks > 0) then
+					blocksNum = #blocks;
+					BlockTemplatePage.CreateBuildingTaskFile(taskfilename, blocksfilename, taskname, blocks, desc)
+				end
+			end
+		end
+    end
 end
