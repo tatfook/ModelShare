@@ -51,6 +51,7 @@
     <None Include="Mod\ModelShare\BuildQuestTask.lua" />
     <None Include="Mod\ModelShare\ModelManager.lua" />
     <None Include="Mod\ModelShare\ShareWindow.lua" />
+    <None Include="Mod\ModelShare\StepClass.lua" />
     <None Include="Mod\ModelShare\TaskClass.lua" />
     <None Include="Mod\ModelShare\ThemeClass.lua" />
     <None Include="README.md" />

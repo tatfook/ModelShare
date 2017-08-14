@@ -27,6 +27,7 @@ local ModelBuildQuest = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShar
 
 ModelBuildQuest.cur_instance         = nil;
 ModelBuildQuest.cur_task_index       = nil;
+ModelBuildQuest.cur_theme_index      = nil;
 ModelBuildQuest.template_theme_index = nil;
 
 function ModelBuildQuest:ctor()
@@ -43,8 +44,8 @@ function ModelBuildQuest:OnInit(theme_index, task_index)
 
 	curModelBuildQuestProvider = ModelBuildQuestProvider:new();
 
-	self.cur_theme_index = theme_index or self.cur_theme_index or 1;
-	self.cur_task_index  = task_index  or self.cur_task_index  or 1;
+	ModelBuildQuest.cur_theme_index = theme_index or ModelBuildQuest.cur_theme_index or 1;
+	ModelBuildQuest.cur_task_index  = task_index  or ModelBuildQuest.cur_task_index  or 1;
 
 --	if(HelpPage.cur_category and HelpPage.cur_category == "tutorial") then
 --		self.cur_task_index = BuildQuest.GetCurrentFinishedTaskIndex(nil,HelpPage.cur_category);
@@ -52,22 +53,22 @@ function ModelBuildQuest:OnInit(theme_index, task_index)
 --		self.cur_task_index = 1;
 --	end
 
-	local cur_theme_taskDS = curModelBuildQuestProvider:GetTasks_DS(self.cur_theme_index, HelpPage.cur_category);
+	local cur_theme_taskDS = curModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.cur_theme_index);
 
-	if(cur_theme_taskDS and BuildQuest.cur_task_index > #cur_theme_taskDS) then
-		BuildQuest.cur_task_index = #cur_theme_taskDS;
+	if(cur_theme_taskDS and ModelBuildQuest.cur_task_index > #cur_theme_taskDS) then
+		ModelBuildQuest.cur_task_index = #cur_theme_taskDS;
 	end
 
-	HelpPage.cur_category = HelpPage.cur_category or "template";
+	--HelpPage.cur_category = HelpPage.cur_category or "template";
 
-	if(ModelBuildQuestProvider.inited) then
+	--[[if(ModelBuildQuestProvider.inited) then
 		return;
 	end
 
-	ModelBuildQuestProvider.inited = true;
+	ModelBuildQuestProvider.inited = true;]]
 
-	self.template_theme_index = self.template_theme_index or 1;
-	self.template_task_index  = self.template_task_index  or 1;
+	ModelBuildQuest.template_theme_index = ModelBuildQuest.template_theme_index or 1;
+	ModelBuildQuest.template_task_index  = ModelBuildQuest.template_task_index  or 1;
 end
 
 function ModelBuildQuest.GetCurrentQuest()

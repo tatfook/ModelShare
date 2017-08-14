@@ -13,7 +13,7 @@ NPL.load("(gl)Mod/ModelShare/TaskClass.lua");
 
 local TaskClass = commonlib.gettable("Mod.ModelShare.TaskClass");
 
-local ThemeClass = commonlib.inherit(nil, commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider.theme_class"));
+local ThemeClass = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ThemeClass"));
 
 function ThemeClass:ctor()
 	self.tasks   = self.tasks   or {};

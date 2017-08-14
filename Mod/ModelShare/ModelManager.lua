@@ -22,14 +22,15 @@ local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.M
 ModelManager.isEditing = false;
 
 function ModelManager:ctor()
-	--ModelBuildQuest:OnInit();
+	ModelBuildQuest:OnInit();
 
-	curModelBuildQuestProvider = ModelBuildQuestProvider:new();
-	self.themesDS = {
-		{order=10, foldername="本地全局模板", official=false, icon="", unlock_coins="0", name="本地全局模板", image="",},
-		{order=10, foldername="本地存档模板", official=false, icon="", unlock_coins="0", name="本地存档模板", image="",},
-		{order=10, foldername="云模板",      official=false, icon="", unlock_coins="0", name="云模板",       image="",},
-	};
+	self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+
+--	self.themesDS = {
+--		{order=10, foldername="本地全局模板", official=false, icon="", unlock_coins="0", name="本地全局模板", image="",},
+--		{order=10, foldername="本地存档模板", official=false, icon="", unlock_coins="0", name="本地存档模板", image="",},
+--		{order=10, foldername="云模板",      official=false, icon="", unlock_coins="0", name="云模板",       image="",},
+--	};
 end
 
 function ModelManager:SetInstance()
@@ -87,11 +88,11 @@ function ModelManager.ClosePage()
 end
 
 function ModelManager.GetTheme_DS(index)
-	local themesDS;
 	if(ModelManager.curInstance) then
-		themesDS = ModelManager.curInstance.themesDS;
+		self = ModelManager.curInstance;
 	end
-    --local themesDS = curModelBuildQuestProvider:GetThemes_DS();
+
+    local themesDS = self.ModelBuildQuestProvider:GetThemes_DS();
 
     if(not index) then
         return #themesDS;
@@ -101,7 +102,15 @@ function ModelManager.GetTheme_DS(index)
 end
 
 function ModelManager.GetTask_DS(index)
-    local tasksDS = curModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
+	local self;
+
+	if(ModelManager.curInstance) then
+		self = ModelManager.curInstance;
+	else
+		return;
+	end
+
+    --local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
 
     if(not index) then
         return 0;--#tasksDS;
@@ -111,7 +120,13 @@ function ModelManager.GetTask_DS(index)
 end
 
 function ModelManager.GetTaskName()
-    local task = curModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+	if(ModelManager.curInstance) then
+		self = ModelManager.curInstance;
+	else
+		return;
+	end
+
+    local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
     if(task) then
         return task.name or "";
@@ -121,7 +136,13 @@ function ModelManager.GetTaskName()
 end
 
 function ModelManager.GetTaskDesc()
-    local task = curModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+	if(ModelManager.curInstance) then
+		self = ModelManager.curInstance;
+	else
+		return;
+	end
+
+    local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
     local desc = "";
 
@@ -193,12 +214,12 @@ function ModelManager.ChangeTask(name, mcmlNode)
 end
 
 function ModelManager.CanEditing()
-	local curTheme
+	local curTheme;
 
 	if(ModelManager.curInstance) then
 		curTheme = ModelManager.curInstance.GetTheme_DS(ModelBuildQuest.template_theme_index);
 	end
-
+	--echo(curTheme);
     if(curTheme) then
         if(curTheme.official) then
             return false;
