@@ -54,7 +54,7 @@ function ModelShare:init()
 	GameLogic.GetFilters():add_filter("BuildQuest.ShowPage",function()
 		local curModelManager = ModelManager:new();
 		curModelManager:SetInstance();
-		--curModelManager:ShowPage();
+		curModelManager:ShowPage();
 
 		return false;
 	end)

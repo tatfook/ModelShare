@@ -32,7 +32,7 @@ ModelBuildQuest.template_theme_index = nil;
 function ModelBuildQuest:ctor()
 end
 
-function ModelBuildQuest:Init(theme_index, task_index)
+function ModelBuildQuest:OnInit(theme_index, task_index)
 	--echo("HelpPage.cur_category")
 	--echo(HelpPage.cur_category)
 	--echo(HelpPage.task_index)

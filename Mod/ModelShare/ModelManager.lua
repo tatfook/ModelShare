@@ -22,16 +22,14 @@ local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.M
 ModelManager.isEditing = false;
 
 function ModelManager:ctor()
-	--ModelBuildQuest:Init();
+	--ModelBuildQuest:OnInit();
 
 	curModelBuildQuestProvider = ModelBuildQuestProvider:new();
-	--self.themesDS              = curModelBuildQuestProvider:GetThemes_DS();
-
-	--echo("self.themesDS")
-	--echo(self.themesDS)
---	self.themesDS[1] = {order=1,foldername="global",official=false,icon="",unlock_coins="0",name="本地全局模板",image="",};
---	self.themesDS[2] = {order=2,foldername="local" ,official=false,icon="",unlock_coins="0",name="本地存档模板",image="",};
---	self.themesDS[3] = {order=3,foldername="cloud" ,official=false,icon="",unlock_coins="0",name="云模板",image="",};
+	self.themesDS = {
+		{order=10, foldername="本地全局模板", official=false, icon="", unlock_coins="0", name="本地全局模板", image="",},
+		{order=10, foldername="本地存档模板", official=false, icon="", unlock_coins="0", name="本地存档模板", image="",},
+		{order=10, foldername="云模板",      official=false, icon="", unlock_coins="0", name="云模板",       image="",},
+	};
 end
 
 function ModelManager:SetInstance()
@@ -89,8 +87,12 @@ function ModelManager.ClosePage()
 end
 
 function ModelManager.GetTheme_DS(index)
-    local themesDS = curModelBuildQuestProvider:GetThemes_DS();
-	
+	local themesDS;
+	if(ModelManager.curInstance) then
+		themesDS = ModelManager.curInstance.themesDS;
+	end
+    --local themesDS = curModelBuildQuestProvider:GetThemes_DS();
+
     if(not index) then
         return #themesDS;
     else

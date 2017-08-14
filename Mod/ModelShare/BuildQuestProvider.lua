@@ -29,21 +29,26 @@ ModelBuildQuestProvider.themesDS         = {};
 ModelBuildQuestProvider.localthemesDS    = {};
 ModelBuildQuestProvider.block_wiki_tasks = {};
 ModelBuildQuestProvider.globalThemePath  = "worlds/DesignHouse/blocktemplates/";
-ModelBuildQuestProvider.localThemePath   = "";
 
 ModelBuildQuestProvider.categoryPaths = {
-	["template"]  = "worlds/DesignHouse/blocktemplates/",
+	["globalTemplate"]  = "worlds/DesignHouse/blocktemplates/",
 };
 
 ModelBuildQuestProvider.categoryDS = {
-	["template"] = {
-		themes = {},themesDS = {},themesType = {},beOfficial = false,
+	["globalTemplate"] = {
+		themes = {}, themesDS = {}, themesType = {}, beOfficial = false,
 	},
+	['localTemplate'] = {
+		themes = {}, themesDS = {}, themesType = {}, beOfficial = false;
+	}
 };
 
 function ModelBuildQuestProvider:ctor()
 	echo("Init BuildQuestProvider");
-	ModelBuildQuestProvider.localThemePath = "worlds/DesignHouse";
+	local currentWorldPath = GameLogic.GetWorldDirectory():gsub("\\","/");
+
+	ModelBuildQuestProvider.categoryPaths['localTemplate'] = currentWorldPath .. "blocktemplates/";
+
 	self:LoadFromFile();
 end
 
@@ -62,7 +67,7 @@ function ModelBuildQuestProvider:LoadFromFile(filename)
 end
 
 function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
-	if(themeKey == "template") then
+	if(themeKey == "globalTemplate") then
 		ModelBuildQuestProvider.categoryDS[themeKey]["themes"]   = ModelBuildQuestProvider.themes;
 		ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"] = ModelBuildQuestProvider.themesDS;
 	end
@@ -120,7 +125,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 					local attr = node.attr;
 
 					if(attr and attr.name) then
-						theme_name_utf8 = L(attr.name);
+						theme_name_utf8 = L(attr.name); --set info,xml theme_name
 
 						if(attr.order) then
 							order = tonumber(attr.order) or order;
@@ -131,7 +136,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				end
 			end
 		end
-
+		if(false) then
 		local insert_index;
 
 		for i=1, #cur_themesDS do
@@ -243,8 +248,11 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				--myTaskMap[node.attr.name] = {task_index = task_index, task_ds_index = #myTasksDS};
 			end
 		end
+		end
 	end
-
+	if(true) then
+		return;
+	end
 	---------------------------------------------------------------------------------------------------
 	for i=1, #cur_themes do
 		cur_themes[i].id = i;
