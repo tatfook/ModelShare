@@ -22,7 +22,7 @@ local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.M
 ModelManager.isEditing = false;
 
 function ModelManager:ctor()
-	ModelBuildQuest:OnInit();
+	ModelBuildQuest:new();
 
 	self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
 
@@ -102,18 +102,16 @@ function ModelManager.GetTheme_DS(index)
 end
 
 function ModelManager.GetTask_DS(index)
-	local self;
-
 	if(ModelManager.curInstance) then
 		self = ModelManager.curInstance;
 	else
 		return;
 	end
 
-    --local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
+    local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
 
     if(not index) then
-        return 0;--#tasksDS;
+        return #tasksDS;
     else
         return tasksDS[index];
     end
@@ -161,9 +159,13 @@ function ModelManager.TaskIsLocked(index)
     end
 end
 
-function ModelManager.CreateNewTheme()
+--[[function ModelManager.CreateNewTheme()
     ModelBuildQuest.new_theme_category_dir = "worlds/DesignHouse/blocktemplates/";
     ModelBuildQuest:ShowCreateNewThemePage("template");
+end]]
+
+function ModelManager.vip()
+	_guihelper.MessageBox(L"VIP功能正在开发中...");
 end
 
 function ModelManager.GetCurThemeIndex()
@@ -215,6 +217,10 @@ end
 
 function ModelManager.CanEditing()
 	local curTheme;
+	
+	if(true) then
+		return true;
+	end
 
 	if(ModelManager.curInstance) then
 		curTheme = ModelManager.curInstance.GetTheme_DS(ModelBuildQuest.template_theme_index);
@@ -243,7 +249,7 @@ function ModelManager.OnSaveTaskDesc()
     local desc    = string.gsub(content,"\r\n","<br />");
 
     --_guihelper.MessageBox(desc);
-    curModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
+    self.ModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
     ModelManager.Refresh();
 end
 
@@ -255,10 +261,10 @@ function ModelManager.GetQuestTriggerText()
     local s        = "";
     local cur_task = ModelBuildQuest:GetCurrentQuest();
 
-    if(ModelBuildQuest:IsTaskUnderway() and cur_task and cur_task.theme_id == theme_index) then
+    if(ModelBuildQuest:IsTaskUnderway() and cur_task and cur_task.theme_id == ModelBuildQuest.template_theme_index) then
         s = L"放弃建造";
     else
-        local task = curModelBuildQuestProvider.GetTask(theme_index, task_index);
+        local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
         if(task and task:IsClickOnceDeploy()) then
             s = L"使用";
@@ -281,7 +287,7 @@ function ModelManager.StartBuild()
 
     local cur_task = ModelBuildQuest:GetCurrentQuest();
 
-    if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == theme_index) then
+    if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == ModelBuildQuest.cur_theme_index) then
         ModelBuildQuest:EndEditing();
         return;
     end
@@ -290,13 +296,15 @@ function ModelManager.StartBuild()
     local ClickOnceDeploy = UseAbsolutePos;
 
     local task = ModelBuildQuest:new({
-                    theme_id = BuildQuest.cur_theme_index, 
-                    task_id  = task_index, 
+                    theme_id = ModelBuildQuest.cur_theme_index, 
+                    task_id  = ModelBuildQuest.cur_task_index, 
                     step_id  = 1,
                     UseAbsolutePos  = UseAbsolutePos,
                     ClickOnceDeploy = ClickOnceDeploy});
+	
+	--echo(task, true);
 
     task:Run();
-    --BuildQuest.ClosePage(true)
-    ClosePage();
+
+    ModelManager.ClosePage();
 end

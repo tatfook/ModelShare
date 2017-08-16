@@ -64,6 +64,8 @@ function ModelBuildQuestProvider:LoadFromFile(filename)
 
 		self:LoadFromTemplate(key, path);
 	end
+
+	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {name = "empty", official = false};
 end
 
 function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
@@ -72,7 +74,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"] = ModelBuildQuestProvider.themesDS;
 	end]]
 	
-	local cur_themes     = ModelBuildQuestProvider.categoryDS[themeKey]["themes"];
+	local cur_themes     = ModelBuildQuestProvider.themes;--categoryDS[themeKey]["themes"];
 	local cur_themesDS   = ModelBuildQuestProvider.themesDS;--ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"];
 	local cur_themesType = ModelBuildQuestProvider.categoryDS[themeKey]["themesType"];
 	local beOfficial     = ModelBuildQuestProvider.categoryDS[themeKey]["beOfficial"];
@@ -179,7 +181,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		themeKey     = themeKey
 	});
 
-	echo(cur_themes, true);
+	--echo(cur_themes, true);
 
 	--ModelBuildQuestProvider.localthemesDS[#ModelBuildQuestProvider.localthemesDS + 1] = {value = theme_name_utf8};
 	
@@ -213,71 +215,75 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		end, "*.*");
 	end
 
-	echo(tasks_output,true)
+	--echo(tasks_output,true)
 	
 	local tasksDS = cur_themes[theme_index].tasksDS;
 	local tasks   = cur_themes[theme_index].tasks;
 	
-	for _, task_item in ipairs(tasks_output) do
-		local taskname;
+	if(themeKey == "globalTemplate") then
+		for _, task_item in ipairs(tasks_output) do
+			local taskname;
 
-		if(isThemeZipFile) then
-			taskname = string.match(task_item, "^(.*)/$");
-		else
-			--判断task item是否ZIP文件
-			taskname = string.match(task_item, "^(.*).zip$");
-
-			if(taskname) then
-				local filename = theme_path .. task_item;
-				ParaAsset.OpenArchive(filename, true);
+			if(isThemeZipFile) then
+				taskname = string.match(task_item, "^(.*)/$");
 			else
-				taskname = task_item;
+				--判断task item是否ZIP文件
+				taskname = string.match(task_item, "^(.*).zip$");
+
+				if(taskname) then
+					local filename = theme_path .. task_item;
+					ParaAsset.OpenArchive(filename, true);
+				else
+					taskname = task_item;
+				end
+			end
+
+			local taskpath    = themePath .. taskname .. "/" .. taskname .. ".xml";
+			local task_dir    = themePath .. taskname .. "/";
+			local taskXmlRoot = ParaXML.LuaXML_ParseFile(taskpath);
+
+			for node in commonlib.XPath.eachNode(taskXmlRoot, "/Task") do
+				node.attr.filepath  = taskpath;
+				node.attr.dir       = task_dir;
+				--echo(node, true);
+				tasksDS[#tasksDS + 1] = {};
+
+				commonlib.partialcopy(tasksDS[#tasksDS], node.attr);
+				tasksDS[#tasksDS].task_index = #tasksDS;
+
+				local task_index  = #tasks + 1;
+				tasks[task_index] = TaskClass:new(node.attr):Init(node, cur_themes[theme_index], task_index, themeKey);
+			
+				--[[if(themeKey == "blockwiki") then
+					local block_id, task_name   = string.match(tasksDS[#tasksDS].name,"(%d*)_(.*)");
+					tasksDS[#tasksDS].block_id  = tonumber(block_id);
+					--tasksDS[#tasksDS].name = task_name;
+				end]]
+
+				--myTaskMap[node.attr.name] = {task_index = task_index, task_ds_index = #myTasksDS};
 			end
 		end
+	end
+
+	if(themeKey == "worldTemplate") then
+		echo("worldTemplate, tasks_output");
+		echo(tasks_output);
 
 		local taskpath    = themePath .. taskname .. "/" .. taskname .. ".xml";
-		local task_dir    = themePath .. taskname .. "/";
-		local taskXmlRoot = ParaXML.LuaXML_ParseFile(taskpath);
-
-		for node in commonlib.XPath.eachNode(taskXmlRoot, "/Task") do
-			node.attr.filepath  = taskpath;
-			node.attr.dir       = task_dir;
-			echo(node, true);
-			tasksDS[#tasksDS+1] = {};
-
-			commonlib.partialcopy(tasksDS[#tasksDS], node.attr);
-			tasksDS[#tasksDS].task_index = #tasksDS;
-
-			local task_index  = #tasks + 1;
-			tasks[task_index] = TaskClass:new(node.attr):Init(node, cur_themes[theme_index], task_index, themeKey);
-			
-			--[[if(themeKey == "blockwiki") then
-				local block_id, task_name   = string.match(tasksDS[#tasksDS].name,"(%d*)_(.*)");
-				tasksDS[#tasksDS].block_id  = tonumber(block_id);
-				--tasksDS[#tasksDS].name = task_name;
-			end]]
-
-			--myTaskMap[node.attr.name] = {task_index = task_index, task_ds_index = #myTasksDS};
-		end
 	end
-	echo(cur_themes[theme_index], true);
-	if(true) then
-		return;
-	end
-	---------------------------------------------------------------------------------------------------
+
 	for i=1, #cur_themes do
 		cur_themes[i].id = i;
 	end
 
-	if (#localthemesDS == 0) then
+	--[[if (#localthemesDS == 0) then
 		localthemesDS[#localthemesDS + 1] = {value = global_template_name_utf8};
-	end
+	end]]
 
-	if(not beOfficial) then
-		cur_themesDS[#cur_themesDS+1] = {name = "empty", official = false};
-	end
+	--echo("cur_themes");
+	--echo(cur_themes, true);
 
-	self.NeedRefreshDS = false;
+	--self.NeedRefreshDS = false;
 end
 
 function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
@@ -338,14 +344,16 @@ function ModelBuildQuestProvider:GetTasks_DS(theme_id, category)
 	return theme.tasksDS;
 end
 
-function ModelBuildQuestProvider:GetTheme(theme_id, category)
+function ModelBuildQuestProvider:GetTheme(theme_id) --category
 	local cur_themes;
 
-	if(category) then
+	--[[if(category) then
 		cur_themes = ModelBuildQuestProvider.categoryDS[category]["themes"];
 	else
 		cur_themes = ModelBuildQuestProvider.themes;
-	end
+	end]]
+
+	cur_themes = ModelBuildQuestProvider.themes;
 
 	return cur_themes[theme_id or 1];
 end

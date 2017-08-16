@@ -9,6 +9,9 @@ NPL.load("(gl)Mod/ModelShare/StepClass.lua");
 local StepClass = commonlib.gettable("Mod.ModelShare.StepClass");
 ------------------------------------------------------------
 ]]
+NPL.load("(gl)script/apps/Aries/Creator/Game/block_engine.lua");
+
+local BlockEngine = commonlib.gettable("MyCompany.Aries.Game.BlockEngine")
 
 local StepClass = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.StepClass"));
 

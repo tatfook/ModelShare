@@ -10,8 +10,10 @@ local TaskClass = commonlib.gettable("Mod.ModelShare.TaskClass");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)Mod/ModelShare/StepClass.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/API/UserProfile.lua");
 
-local StepClass = commonlib.gettable("Mod.ModelShare.StepClass");
+local StepClass   = commonlib.gettable("Mod.ModelShare.StepClass");
+local UserProfile = commonlib.gettable("MyCompany.Aries.Creator.Game.API.UserProfile");
 
 local TaskClass = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.TaskClass"));
 
