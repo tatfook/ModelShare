@@ -25,12 +25,6 @@ function ModelManager:ctor()
 	ModelBuildQuest:new();
 
 	self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
-
---	self.themesDS = {
---		{order=10, foldername="本地全局模板", official=false, icon="", unlock_coins="0", name="本地全局模板", image="",},
---		{order=10, foldername="本地存档模板", official=false, icon="", unlock_coins="0", name="本地存档模板", image="",},
---		{order=10, foldername="云模板",      official=false, icon="", unlock_coins="0", name="云模板",       image="",},
---	};
 end
 
 function ModelManager:SetInstance()
@@ -107,7 +101,7 @@ function ModelManager.GetTask_DS(index)
 	else
 		return;
 	end
-
+	
     local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
 
     if(not index) then
@@ -180,7 +174,8 @@ function ModelManager.ChangeTheme(name, mcmlNode)
     ModelBuildQuest.template_theme_index = index;
     --echo(ModelBuildQuest.template_theme_index)
 
-    ModelBuildQuest:OnInit(ModelBuildQuest.template_theme_index, 1);
+    --ModelBuildQuest:OnInit(ModelBuildQuest.template_theme_index, 1);
+
     task_index = ModelBuildQuest.cur_task_index;
 	
 	if(ModelManager.curInstance) then

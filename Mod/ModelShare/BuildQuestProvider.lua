@@ -38,25 +38,28 @@ ModelBuildQuestProvider.categoryDS = {
 	["globalTemplate"] = {
 		themes = {}, themesDS = {}, themesType = {}, beOfficial = false,
 	},
-	['worldTemplate'] = {
+	["worldTemplate"] = {
 		themes = {}, themesDS = {}, themesType = {}, beOfficial = false;
 	}
 };
 
 function ModelBuildQuestProvider:ctor()
+	ModelBuildQuestProvider.themes           = {};
+	ModelBuildQuestProvider.themesDS         = {};
+	ModelBuildQuestProvider.localthemesDS    = {};
+
 	echo("Init BuildQuestProvider");
 	local currentWorldPath = GameLogic.GetWorldDirectory():gsub("\\","/");
 
 	ModelBuildQuestProvider.categoryPaths['worldTemplate'] = currentWorldPath .. "blocktemplates/";
 
 	self:LoadFromFile();
+	self:LoadFromCloud();
+
+	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {name = "empty", official = false};
 end
 
-function ModelBuildQuestProvider:LoadFromFile(filename)
-	ModelBuildQuestProvider.themes           = {};
-	ModelBuildQuestProvider.themesDS         = {};
-	ModelBuildQuestProvider.localthemesDS    = {};
-
+function ModelBuildQuestProvider:LoadFromFile()
 	for key, path in pairs(ModelBuildQuestProvider.categoryPaths) do
 		ModelBuildQuestProvider.categoryDS[key]["themes"]     = {};
 		ModelBuildQuestProvider.categoryDS[key]["themesDS"]   = {};
@@ -64,8 +67,6 @@ function ModelBuildQuestProvider:LoadFromFile(filename)
 
 		self:LoadFromTemplate(key, path);
 	end
-
-	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {name = "empty", official = false};
 end
 
 function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
@@ -263,13 +264,36 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				--myTaskMap[node.attr.name] = {task_index = task_index, task_ds_index = #myTasksDS};
 			end
 		end
+
+		--echo("globalTemplate, tasksDS, task");
+		--echo(taskDS, true);
+		--echo(task, true);
 	end
 
 	if(themeKey == "worldTemplate") then
 		echo("worldTemplate, tasks_output");
 		echo(tasks_output);
+		for _, task_item in ipairs(tasks_output) do
+			local taskpath = themePath .. task_item;
+			echo(taskpath);
+		end
 
-		local taskpath    = themePath .. taskname .. "/" .. taskname .. ".xml";
+		for _, task_item in ipairs(tasks_output) do 
+			local name = task_item:match("([^/\\]+)%.blocks%.xml$");
+
+			if(name) then
+				--file.text     = commonlib.Encoding.url_decode(commonlib.Encoding.DefaultToUtf8(file.text));
+				--file.filename = GameLogic.current_worlddir .. "blocktemplates/" .. file.filename;
+				--folder_local[#folder_local+1] = {name="file", attr=file};
+
+				tasksDS[#tasksDS + 1] = {};
+
+				local file = {name = name}
+
+				commonlib.partialcopy(tasksDS[#tasksDS],file);
+				tasksDS[#tasksDS].task_index = #tasksDS;
+			end
+		end
 	end
 
 	for i=1, #cur_themes do
@@ -315,6 +339,10 @@ function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
 	end
 
 	return out or {};
+end
+
+function ModelBuildQuestProvider:LoadFromCloud()
+	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {order=10, foldername="cloudTemplate", official=false, icon="", unlock_coins="0", name="云模板", image="",};
 end
 
 function ModelBuildQuestProvider:GetThemes_DS(themeKey)
