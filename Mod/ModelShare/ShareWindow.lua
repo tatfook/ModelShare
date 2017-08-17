@@ -11,12 +11,18 @@ local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
 ]]
 NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)script/kids/3DMapSystemUI/ScreenShot/SnapshotPage.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 
-local loginMain  = commonlib.gettable("Mod.WorldShare.login.loginMain");
+local loginMain     = commonlib.gettable("Mod.WorldShare.login.loginMain");
+local BlockTemplate = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
+local BlockEngine   = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+local SelectBlocks  = commonlib.gettable("MyCompany.Aries.Game.Tasks.SelectBlocks");
 
 local ShareWindow = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ShareWindow"));
 
-ShareWindow.SnapShotPath = "Screen Shots/block_template.jpg";
+ShareWindow.SnapShotPath         = "Screen Shots/block_template.jpg";
+ShareWindow.global_template_dir  = "worlds/DesignHouse/blocktemplates/"
+ShareWindow.default_template_dir = "worlds/DesignHouse/blocktemplates/";
 
 function ShareWindow:ctor()
 end
@@ -26,6 +32,22 @@ end
 
 function ShareWindow:ShowPage()
 	if(ShareWindow.curInstance) then
+		local selectBlocksInstance = SelectBlocks.GetCurrentInstance();
+
+		local pivot_x, pivot_y, pivot_z = selectBlocksInstance:GetSelectionPivot();
+
+		if(selectBlocksInstance.UsePlayerPivotY) then
+			local x,y,z    = ParaScene.GetPlayer():GetPosition();
+			local _, by, _ = BlockEngine:block(0, y+0.1, 0);
+
+			pivot_y = by;
+		end
+
+		ShareWindow.pivot  = {pivot_x, pivot_y, pivot_z};
+		ShareWindow.blocks = selectBlocksInstance:GetCopyOfBlocks(pivot);
+
+		--echo(ShareWindow.pivot);
+
 		System.App.Commands.Call("File.MCMLWindowFrame", {
 			url  = "Mod/ModelShare/ShareWindow.html", 
 			name = "ShareWindow",
@@ -99,10 +121,6 @@ function ShareWindow.screenshot()
     end
 end
 
-function ShareWindow.save()
-
-end
-
 function ShareWindow.OnClickTakeSnapshot()
 	if(MyCompany.Apps.ScreenShot.SnapshotPage.TakeSnapshot(ShareWindow.SnapShotPath, 80, 80, false, false)) then
 		-- refresh image
@@ -144,59 +162,73 @@ function ShareWindow.beLocal()
 	end
 end
 
-function ShareWindow.OnClickSave()
-	if(not page) then
+function ShareWindow.localSave()
+	if(not ShareWindow.curInstance.page) then
 		return;
 	end
 
-	local template_dir = page:GetValue("template_dir");
+	local bSaveSnapshot;
+	local isThemedTemplate;
 	local isSaveInLocalWorld;
 
-	if(template_dir == 0) then
+	local template_base_dir = ShareWindow.default_template_dir;--ShareWindow.template_save_dir or ShareWindow.default_template_dir;
+
+	local template_dir      = page:GetValue("savePath");
+
+	if(template_dir == "world") then
+		isSaveInLocalWorld = true;
+	elseif(template_dir == "global") then
+		isThemedTemplate = true;
+	end
+
+	--[[if(template_dir == 0) then
 		isSaveInLocalWorld = true;
 		template_dir       = nil;
 	elseif(template_dir == -1) then
 		template_dir = "";
-	end
+	end]]
 
-	local template_base_dir = BlockTemplatePage.template_save_dir or default_template_dir;
+	local name = {};
 
-    local name = page:GetUIValue("name") or page:GetUIValue("tl_name") or "";
-	local desc = page:GetUIValue("template_desc") or page:GetUIValue("template_desc") or "";
+    name.utf8 = page:GetUIValue("templateName"); --or page:GetUIValue("tl_name") or "";
+	name.utf8 = name:gsub("%s", "");
+
+	local desc = page:GetUIValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
 
     desc = string.gsub(desc,"\r?\n","<br/>")
-	name = name:gsub("%s", "");
 
-	if(name == "")  then
+	if(name.utf8 == "")  then
 		_guihelper.MessageBox(L"名字不能为空~");
 		return;
 	end
-	local name_normalized = commonlib.Encoding.Utf8ToDefault(name);
 
-	local isThemedTemplate = template_dir and template_dir ~= "";
-	local bSaveSnapshot    = false; -- not isThemedTemplate and not isSaveInLocalWorld;
+	name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
-    local filename,taskfilename;
+	--isThemedTemplate = template_dir and template_dir ~= "";
+	bSaveSnapshot = false; -- not isThemedTemplate and not isSaveInLocalWorld;
+
+    local filename, taskfilename;
 
 	if(isSaveInLocalWorld) then
-		filename = format("%s%s.blocks.xml", GameLogic.current_worlddir.."blocktemplates/", name_normalized);
+		filename = format("%s%s.blocks.xml", GameLogic.current_worlddir .. "blocktemplates/", name.default);
 	elseif(isThemedTemplate) then
 		ParaIO.CreateDirectory(template_base_dir);
 
-		local subdir = template_dir; -- commonlib.Encoding.Utf8ToDefault(template_dir);
+		--local subdir = template_dir; -- commonlib.Encoding.Utf8ToDefault(template_dir);
 
-		filename     = format("%s%s.blocks.xml", template_base_dir..subdir.."/"..name_normalized.."/", name_normalized);
-		taskfilename = format("%s%s.xml", template_base_dir..subdir.."/"..name_normalized.."/", name_normalized);
+		filename     = format("%s%s.blocks.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
+		taskfilename = format("%s%s.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
 	else
-		filename = format("%s%s.blocks.xml", template_base_dir, name_normalized);
+		return;
+		--filename = format("%s%s.blocks.xml", template_base_dir, name_normalized);
 	end
 
 	local function doSave_()
 		local x, y, z    = ParaScene.GetPlayer():GetPosition();
-		local bx, by, bz = BlockEngine:block(x,y,z)
-		local player_pos = string.format("%d,%d,%d",bx,by,bz);
+		local bx, by, bz = BlockEngine:block(x, y, z)
+		local player_pos = string.format("%d,%d,%d", bx, by, bz);
 
-		local pivot = string.format("%d,%d,%d",BlockTemplatePage.pivot[1],BlockTemplatePage.pivot[2],BlockTemplatePage.pivot[3]);
+		local pivot = string.format("%d,%d,%d", ShareWindow.pivot[1], ShareWindow.pivot[2], ShareWindow.pivot[3]);
 
 		BlockTemplatePage.SaveToTemplate(filename, BlockTemplatePage.blocks, {
 			name            = name,
@@ -223,5 +255,38 @@ function ShareWindow.OnClickSave()
 		end, _guihelper.MessageBoxButtons.YesNo);
 	else
 		doSave_();
+	end
+end
+
+function ShareWindow.cloudAndLocalSave()
+
+end
+
+function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSaveSnapshot)
+	if( not GameLogic.IsOwner()) then
+		--_guihelper.MessageBox(format("只有世界的作者, 才能保存模板. 请尊重别人的创意,不要盗版!", tostring(WorldCommon.GetWorldTag("nid"))));
+		--return;
+		GameLogic.AddBBS("copyright_respect", L"请尊重别人的创意,不要盗版!", 6000, "0 255 0");
+	end
+
+	if(not blocks or #blocks<1) then
+		_guihelper.MessageBox(L"需要选中多块才能存为模板");
+		return;
+	end
+	if(#blocks > BlockTemplatePage.max_blocks_per_template) then
+		_guihelper.MessageBox(format(L"模板最多能保存%d块", BlockTemplatePage.max_blocks_per_template))
+		return;
+	end
+
+	local task = BlockTemplate:new({operation = BlockTemplate.Operations.Save, filename = filename, params = params, blocks = blocks})
+
+	if(task:Run()) then
+		BroadcastHelper.PushLabel({id="BlockTemplatePage", label = format(L"模板成功保存到:%s", commonlib.Encoding.DefaultToUtf8(filename)), max_duration=4000, color = "0 255 0", scaling=1.1, bold=true, shadow=true,});
+		page:CloseWindow();
+		callbackFunc();
+		if(bSaveSnapshot) then
+			ParaIO.CopyFile(BlockTemplatePage.DefaultSnapShot, filename:gsub("xml$", "jpg"), true);	
+		end
+		_guihelper.MessageBox(L"保存成功！ 您可以从【建造】->【模板】中创建这个模板的实例了～");
 	end
 end

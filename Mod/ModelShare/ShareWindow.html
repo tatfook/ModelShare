@@ -51,7 +51,7 @@
                             <input type="button" onclick="curShareWindow.OnClickTakeSnapshot" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
                         </div>
                         <div class="pull-left" style="width:330px;">
-                            <div style="margin-bottom:5px;">模板名称<input type="text" EmptyText="请输入模板名称" class="bbs_text common-field" style="margin-left:10px;"/></div>
+                            <div style="margin-bottom:5px;">模板名称<input type="text" name="templateName" EmptyText="请输入模板名称" class="bbs_text common-field" style="margin-left:10px;"/></div>
                             <div style="margin-bottom:27px;">
                                 保存位置
                                 <select name="savePath" onclick="curShareWindow.setSavePath" style="margin-left:10px;width:263px;" class="common-field">
@@ -73,7 +73,7 @@
                             模板描述
                         </div>
                         <div style="background-color:white;width:420px;">
-                            <textarea style="height:100px;"></textarea>
+                            <textarea name="templateDesc" style="height:100px;" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>'></textarea>
                         </div>
                         <div style="margin-top:5px;">
                             方块数量：123456     体积：30*30*30
@@ -112,10 +112,10 @@
                     </div>
                     <div style="margin-top:15px;margin-left:110px;">
                         <pe:if condition="<%= curShareWindow.beLocal() %>" >
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.save">保存</button>
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.localSave">保存</button>
                         </pe:if>
                         <pe:if condition="<%= not curShareWindow.beLocal() %>">
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" enabled="false" onclick="save">保存并分享</button>
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" enabled="false" onclick="curShareWindow.cloudAndLocalSave">保存并分享</button>
                         </pe:if>
                         <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="curShareWindow.closePage">取消</button>
                     </div>
