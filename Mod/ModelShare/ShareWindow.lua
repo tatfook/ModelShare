@@ -1,4 +1,4 @@
---[[
+ï»¿--[[
 Title: ShareModel
 Author(s):  BIG
 Date: 2017.6
@@ -13,16 +13,19 @@ NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)script/kids/3DMapSystemUI/ScreenShot/SnapshotPage.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 
-local loginMain     = commonlib.gettable("Mod.WorldShare.login.loginMain");
-local BlockTemplate = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
-local BlockEngine   = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
-local SelectBlocks  = commonlib.gettable("MyCompany.Aries.Game.Tasks.SelectBlocks");
+local loginMain       = commonlib.gettable("Mod.WorldShare.login.loginMain");
+local BlockTemplate   = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
+local BlockEngine     = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
+local SelectBlocks    = commonlib.gettable("MyCompany.Aries.Game.Tasks.SelectBlocks");
+local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 
 local ShareWindow = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ShareWindow"));
 
-ShareWindow.SnapShotPath         = "Screen Shots/block_template.jpg";
-ShareWindow.global_template_dir  = "worlds/DesignHouse/blocktemplates/"
-ShareWindow.default_template_dir = "worlds/DesignHouse/blocktemplates/";
+-- max number blocks in a template. 
+ShareWindow.max_blocks_per_template = 5000000;
+ShareWindow.SnapShotPath            = "Screen Shots/block_template.jpg";
+ShareWindow.global_template_dir     = "worlds/DesignHouse/blocktemplates/"
+ShareWindow.default_template_dir    = "worlds/DesignHouse/blocktemplates/";
 
 function ShareWindow:ctor()
 end
@@ -128,7 +131,7 @@ function ShareWindow.OnClickTakeSnapshot()
 		echo(ShareWindow.SnapShotPath);
 		ShareWindow.Refresh();
 	else
-		_guihelper.MessageBox(L"½ØÍ¼Ê§°ÜÁË, ÇëÈ·¶¨ÄúÓĞÈ¨ÏŞ¶ÁĞ´´ÅÅÌ")
+		_guihelper.MessageBox(L"æˆªå›¾å¤±è´¥äº†, è¯·ç¡®å®šæ‚¨æœ‰æƒé™è¯»å†™ç£ç›˜")
 	end
 
 
@@ -167,6 +170,8 @@ function ShareWindow.localSave()
 		return;
 	end
 
+	local page = ShareWindow.curInstance.page;
+
 	local bSaveSnapshot;
 	local isThemedTemplate;
 	local isSaveInLocalWorld;
@@ -191,14 +196,14 @@ function ShareWindow.localSave()
 	local name = {};
 
     name.utf8 = page:GetUIValue("templateName"); --or page:GetUIValue("tl_name") or "";
-	name.utf8 = name:gsub("%s", "");
+	name.utf8 = name.utf8:gsub("%s", "");
 
 	local desc = page:GetUIValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
 
     desc = string.gsub(desc,"\r?\n","<br/>")
 
 	if(name.utf8 == "")  then
-		_guihelper.MessageBox(L"Ãû×Ö²»ÄÜÎª¿Õ~");
+		_guihelper.MessageBox(L"åå­—ä¸èƒ½ä¸ºç©º~");
 		return;
 	end
 
@@ -230,25 +235,26 @@ function ShareWindow.localSave()
 
 		local pivot = string.format("%d,%d,%d", ShareWindow.pivot[1], ShareWindow.pivot[2], ShareWindow.pivot[3]);
 
-		BlockTemplatePage.SaveToTemplate(filename, BlockTemplatePage.blocks, {
-			name            = name,
+		ShareWindow.SaveToTemplate(filename, ShareWindow.blocks, {
+			name            = name.utf8,
 			author_nid      = System.User.nid,
-			creation_date   = ParaGlobal.GetDateFormat("yyyy-MM-dd").."_"..ParaGlobal.GetTimeFormat("HHmmss"),
+			creation_date   = ParaGlobal.GetDateFormat("yyyy-MM-dd") .. "_" .. ParaGlobal.GetTimeFormat("HHmmss"),
 			player_pos      = player_pos,
 			pivot           = pivot,
 			relative_motion = page:GetValue("checkboxRelativeMotion", false),
 		},function ()
+
 			if(isThemedTemplate) then
-				BlockTemplatePage.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name, BlockTemplatePage.blocks,desc);
-				BuildQuestProvider.RefreshDataSource();
+				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name, ShareWindow.blocks, desc);
+				--BuildQuestProvider.RefreshDataSource();
 			end
 
-			GameLogic.GetFilters():apply_filters("file_exported", "template", filename);
+			--GameLogic.GetFilters():apply_filters("file_exported", "template", filename);
 		end, bSaveSnapshot);
 	end
 
 	if(ParaIO.DoesFileExist(filename)) then
-		_guihelper.MessageBox(format(L"Ä£°åÎÄ¼ş%sÒÑ¾­´æÔÚ, ÊÇ·ñÒª¸²¸ÇÖ®Ç°µÄÎÄ¼ş?", commonlib.Encoding.DefaultToUtf8(filename)), function(res)
+		_guihelper.MessageBox(format(L"æ¨¡æ¿æ–‡ä»¶%så·²ç»å­˜åœ¨, æ˜¯å¦è¦è¦†ç›–ä¹‹å‰çš„æ–‡ä»¶?", commonlib.Encoding.DefaultToUtf8(filename)), function(res)
 			if(res and res == _guihelper.DialogResult.Yes) then
 				doSave_();
 			end
@@ -264,29 +270,105 @@ end
 
 function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSaveSnapshot)
 	if( not GameLogic.IsOwner()) then
-		--_guihelper.MessageBox(format("Ö»ÓĞÊÀ½çµÄ×÷Õß, ²ÅÄÜ±£´æÄ£°å. Çë×ğÖØ±ğÈËµÄ´´Òâ,²»ÒªµÁ°æ!", tostring(WorldCommon.GetWorldTag("nid"))));
+		--_guihelper.MessageBox(format("åªæœ‰ä¸–ç•Œçš„ä½œè€…, æ‰èƒ½ä¿å­˜æ¨¡æ¿. è¯·å°Šé‡åˆ«äººçš„åˆ›æ„,ä¸è¦ç›—ç‰ˆ!", tostring(WorldCommon.GetWorldTag("nid"))));
 		--return;
-		GameLogic.AddBBS("copyright_respect", L"Çë×ğÖØ±ğÈËµÄ´´Òâ,²»ÒªµÁ°æ!", 6000, "0 255 0");
+		GameLogic.AddBBS("copyright_respect", L"è¯·å°Šé‡åˆ«äººçš„åˆ›æ„,ä¸è¦ç›—ç‰ˆ!", 6000, "0 255 0");
 	end
 
 	if(not blocks or #blocks<1) then
-		_guihelper.MessageBox(L"ĞèÒªÑ¡ÖĞ¶à¿é²ÅÄÜ´æÎªÄ£°å");
-		return;
-	end
-	if(#blocks > BlockTemplatePage.max_blocks_per_template) then
-		_guihelper.MessageBox(format(L"Ä£°å×î¶àÄÜ±£´æ%d¿é", BlockTemplatePage.max_blocks_per_template))
+		_guihelper.MessageBox(L"éœ€è¦é€‰ä¸­å¤šå—æ‰èƒ½å­˜ä¸ºæ¨¡æ¿");
 		return;
 	end
 
-	local task = BlockTemplate:new({operation = BlockTemplate.Operations.Save, filename = filename, params = params, blocks = blocks})
+	if(#blocks > ShareWindow.max_blocks_per_template) then
+		_guihelper.MessageBox(format(L"æ¨¡æ¿æœ€å¤šèƒ½ä¿å­˜%då—", ShareWindow.max_blocks_per_template))
+		return;
+	end
+
+	local task = BlockTemplate:new({
+		operation = BlockTemplate.Operations.Save,
+		filename  = filename,
+		params    = params,
+		blocks    = blocks
+	});
 
 	if(task:Run()) then
-		BroadcastHelper.PushLabel({id="BlockTemplatePage", label = format(L"Ä£°å³É¹¦±£´æµ½:%s", commonlib.Encoding.DefaultToUtf8(filename)), max_duration=4000, color = "0 255 0", scaling=1.1, bold=true, shadow=true,});
-		page:CloseWindow();
-		callbackFunc();
-		if(bSaveSnapshot) then
-			ParaIO.CopyFile(BlockTemplatePage.DefaultSnapShot, filename:gsub("xml$", "jpg"), true);	
+		BroadcastHelper.PushLabel({
+			id="BlockTemplatePage",
+			label = format(L"æ¨¡æ¿æˆåŠŸä¿å­˜åˆ°:%s", commonlib.Encoding.DefaultToUtf8(filename)),
+			max_duration=4000,
+			color = "0 255 0",
+			scaling=1.1,
+			bold=true,
+			shadow=true,
+		});
+		
+		ShareWindow.closePage();
+
+		if(type(callbackFunc) == "function") then
+			callbackFunc();
 		end
-		_guihelper.MessageBox(L"±£´æ³É¹¦£¡ Äú¿ÉÒÔ´Ó¡¾½¨Ôì¡¿->¡¾Ä£°å¡¿ÖĞ´´½¨Õâ¸öÄ£°åµÄÊµÀıÁË¡«");
+
+		if(bSaveSnapshot) then
+			ParaIO.CopyFile(ShareWindow.SnapShotPath, filename:gsub("xml$", "jpg"), true);
+		end
+
+		_guihelper.MessageBox(L"ä¿å­˜æˆåŠŸï¼ æ‚¨å¯ä»¥ä»ã€å»ºé€ ã€‘->ã€æ¨¡æ¿ã€‘ä¸­åˆ›å»ºè¿™ä¸ªæ¨¡æ¿çš„å®ä¾‹äº†ï½");
+	end
+end
+
+function ShareWindow.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
+	local blocks = _blocks;
+	local file   = ParaIO.open(filename, "w");
+
+	if(file:IsValid()) then
+		local o = {
+			name="Task",
+			attr = {
+				name = taskname,
+				click_once_deploy="true",
+				icon = "",
+				image = "",
+				desc = desc or taskname,
+				UseAbsolutePos = "false"
+			},
+		};
+
+		o[1] = {
+			name="Step",
+			attr = {
+				auto_create = "true",
+				src = blocksfilename:gsub("(.*)[^\\/]+$", ""),
+			},
+		};
+
+		local blocksNum;
+
+		if(blocks) then
+			blocksNum = #blocks;
+		else
+			local select_task = SelectBlocks.GetCurrentInstance();
+
+			if(select_task) then
+				local blocks = select_task:GetCopyOfBlocks();
+
+				blocksNum = #blocks;
+			else
+				file:close();
+				return;
+			end
+		end
+
+		o[1][1] = {
+				name = "tip",
+				attr = {
+				block = string.format("0-%d",blocksNum - 1)
+			},
+		};
+
+		file:WriteString(commonlib.Lua2XmlString(o, true));
+		file:close();
+
+		return true;
 	end
 end
