@@ -7,35 +7,10 @@
     <pe:mcml>
         <script type="text/npl" refresh="false" src="ShareWindow.lua">
             <![CDATA[
-                local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
-                local loginMain   = commonlib.gettable("Mod.WorldShare.login.loginMain");
+                ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
                 
-                local curShareWindow = ShareWindow.curInstance;
+                curShareWindow = ShareWindow.curInstance;
                 curShareWindow:SetPage();
-                
-                function isSignedIn()
-                    return loginMain.IsSignedIn();
-                end
-
-                function login()
-                    curShareWindow:Login();
-                end
-
-                function register()
-                    ParaGlobal.ShellExecute("open", loginMain.site .. "/wiki/home", "", "", 1);
-                end
-
-                function screenshot()
-                    if(curShareWindow.screenshot) then
-                        return curShareWindow.screenshot;
-                    else
-                        return false;
-                    end
-                end
-
-                function closePage()
-                    curShareWindow:OnClose();
-                end
             ]]>
         </script>
         <style type="text/mcss">
@@ -60,34 +35,37 @@
            }
         </style>
         <div style="width:500px;height:270px;">
-            <aries:window mode="thin" width="450" height="500" style="color:white;" title='<%=L"保存模板" %>' onclose="closePage">
+            <aries:window mode="thin" width="450" height="500" style="color:white;" title='<%=L"保存模板" %>' onclose="curShareWindow.closePage">
                 <div style="padding:10px;padding-top:16px;">
                     <div>
                         <div class="pull-left" style="width:90px;height:110px;">
-                            <pe:if condition="<%= screenshot()%>">
-                                <img src="<%= screenshot()%>" alt="Alternate Text" />
+                            <pe:if condition="<%= curShareWindow.screenshot()%>">
+                                <img name="CurrentSnapshot" alt="Alternate Text" style="width: 80px;height: 80px;" tooltip='<%=L"点击重新截图"%>' onclick="curShareWindow.OnClickTakeSnapshot"/>
                             </pe:if>
-                            <pe:if condition="<%= not screenshot()%>">
+                            <pe:if condition="<%= not curShareWindow.screenshot()%>">
                                 <div style="width: 80px;height: 80px;background-color:#FFFFFF;textcolor:black;color:black">
                                     暂无截图
                                 </div>
                             </pe:if>
 
-                            <input type="button" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
+                            <input type="button" onclick="curShareWindow.OnClickTakeSnapshot" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
                         </div>
                         <div class="pull-left" style="width:330px;">
                             <div style="margin-bottom:5px;">模板名称<input type="text" EmptyText="请输入模板名称" class="bbs_text common-field" style="margin-left:10px;"/></div>
                             <div style="margin-bottom:27px;">
                                 保存位置
-                                <select name="" onclick="" style="margin-left:10px;width:263px;" class="common-field">
-                                    <option value="" name="">本地当前存档内</option>
-                                    <option value="" name="">本地模板库（即全局模板）</option>
-                                    <option value="" name="">KeepWork云</option>
-                                    <option value="" name="">KeepWork云和当前存档</option>
-                                    <option value="" name="" selected="selected">KeepWork云和本地模板库</option>
+                                <select name="savePath" onclick="curShareWindow.setSavePath" style="margin-left:10px;width:263px;" class="common-field">
+                                    <option value="world" name="" selected="selected">本地当前存档内</option>
+                                    <option value="global" name="">本地模板库（即全局模板）</option>
+                                    <option value="cloud" name="">KeepWork云</option>
+                                    <option value="cloudAndWorld" name="">KeepWork云和当前存档</option>
+                                    <option value="cloudAndGlobal" name="">KeepWork云和本地模板库</option>
                                 </select>
                             </div>
-                            <div><input type="checkbox" />演员使用相对位置</div>
+                            <div>
+                                <input type="checkbox" />
+                                <div for="checkboxRelativeMotion" style="float:left" tooltip='<%=L"不选表示使用绝对位置"%>'><%=L"演员使用相对位置"%></div>
+                            </div>
                         </div>
                     </div>
                     <div style="margin-top:10px;">
@@ -95,9 +73,7 @@
                             模板描述
                         </div>
                         <div style="background-color:white;width:420px;">
-                            <textarea style="height:100px;">
-                                asdfasdfasdf
-                            </textarea>
+                            <textarea style="height:100px;"></textarea>
                         </div>
                         <div style="margin-top:5px;">
                             方块数量：123456     体积：30*30*30
@@ -107,37 +83,41 @@
                         <input type="checkbox" enabled="false"/>分享作品
                     </div>
                     <div style="margin-top:5px;">
-                        <pe:if condition="<%= isSignedIn()%>">
+                        <pe:if condition="<%= curShareWindow.isSignedIn()%>">
                             <div>
                                 <div class="pull-left" style="width:80px;">
                                     作品标签：
                                 </div>
                                 <div class="pull-left" style="font-size:12px;base-font-size:12px;width:340px;">
                                     <div>
-                                        <input class="bbs_text common-field" style="width:auto" value="原创;大富网络;一人一网;鸡犬升天" />
+                                        <input class="bbs_text common-field" style="width:auto" value="原创;大富网络;一人一网" />
                                     </div>
                                     <div>
                                         热门标签：
                                         <button class="tag-button mc_light_grey_button_with_fillet">原创</button>
                                         <button class="tag-button mc_light_grey_button_with_fillet">大富网络</button>
                                         <button class="tag-button mc_light_grey_button_with_fillet">一人一网</button>
-                                        <button class="tag-button mc_light_grey_button_with_fillet">鸡犬升天</button>
                                     </div>
                                     <div style="margin-top:5px;">标签之间请用逗号进行分隔，最多不超过四个</div>
                                 </div>
                             </div>
                         </pe:if>
-                        <pe:if condition="<%= not isSignedIn()%>">
+                        <pe:if condition="<%= not curShareWindow.isSignedIn()%>">
                             <div style="text-align:center;width:370px;height:65px;padding-top:20px;">
                                 登陆Keepwork，保存自己的作品&nbsp;&nbsp;
-                                <a style="textcolor:#FFFFFF;color:#FFFFFF;" onclick="login">登陆</a>
-                                <a style="textcolor:#FFFFFF;color:#FFFFFF" onclick="register">&nbsp;&nbsp;注册</a>
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF;" onclick="curShareWindow.login">登陆</a>
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF" onclick="curShareWindow.register">&nbsp;&nbsp;注册</a>
                             </div>
                         </pe:if>
                     </div>
                     <div style="margin-top:15px;margin-left:110px;">
-                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" enabled="false">保存并分享</button>
-                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="closePage">取消</button>
+                        <pe:if condition="<%= curShareWindow.beLocal() %>" >
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.save">保存</button>
+                        </pe:if>
+                        <pe:if condition="<%= not curShareWindow.beLocal() %>">
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" enabled="false" onclick="save">保存并分享</button>
+                        </pe:if>
+                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="curShareWindow.closePage">取消</button>
                     </div>
                 </div>
             </aries:window>
