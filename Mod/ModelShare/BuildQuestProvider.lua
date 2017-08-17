@@ -292,6 +292,9 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 				commonlib.partialcopy(tasksDS[#tasksDS],file);
 				tasksDS[#tasksDS].task_index = #tasksDS;
+
+				local task_index  = #tasks + 1;
+				tasks[task_index] = {name = name};
 			end
 		end
 	end

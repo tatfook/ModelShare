@@ -245,7 +245,7 @@ function ShareWindow.localSave()
 		},function ()
 
 			if(isThemedTemplate) then
-				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name, ShareWindow.blocks, desc);
+				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name.utf8, ShareWindow.blocks, desc);
 				--BuildQuestProvider.RefreshDataSource();
 			end
 

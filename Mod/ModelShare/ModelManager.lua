@@ -101,12 +101,15 @@ function ModelManager.GetTask_DS(index)
 	else
 		return;
 	end
-	
-    local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
 
+    local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
+	
     if(not index) then
         return #tasksDS;
     else
+		--echo("taskDS");
+		--echo(tasksDS[index]);
+
         return tasksDS[index];
     end
 end
@@ -119,7 +122,7 @@ function ModelManager.GetTaskName()
 	end
 
     local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
-
+	echo(task, true);
     if(task) then
         return task.name or "";
     else

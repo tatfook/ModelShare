@@ -79,9 +79,11 @@
                             方块数量：123456     体积：30*30*30
                         </div>
                     </div>
-                    <div style="margin-top:5px;">
-                        <input type="checkbox" enabled="false"/>分享作品
-                    </div>
+                    <pe:if condition="<%= not curShareWindow.beLocal() %>" >
+                        <div style="margin-top:5px;">
+                            <input type="checkbox" enabled="false"/>分享作品
+                        </div>
+                    </pe:if>
                     <div style="margin-top:5px;">
                         <pe:if condition="<%= curShareWindow.isSignedIn()%>">
                             <div>
