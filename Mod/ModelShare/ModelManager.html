@@ -90,14 +90,14 @@
                                 <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == true %>'>
                                     <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
                                     <input type="button" class="item_text item_text_select" value='<%=Eval("name") %>' enabled="false"/>
-                                    <input type="button" class="order item_button_common" />
-                                    <input type="button" class="item_close_button item_button_common" />
+                                    <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
+                                    <input type="button" class="item_close_button item_button_common" onclick="curModelManager.deleteTemplate"/>
                                 </pe:if>
                                 <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == false %>'>
                                     <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
                                     <input type="button" class="item_text item_text_unselect" value='<%=Eval("name") %>' onclick="curModelManager.ChangeTask" param1='<%=Eval("index") %>' />
-                                    <input type="button" class="order item_button_common"/>
-                                    <input type="button" class="item_close_button item_button_common" />
+                                    <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
+                                    <input type="button" class="item_close_button item_button_common" onclick="curModelManager.deleteTemplate"/>
                                 </pe:if>
                             </div>
                         </Columns>

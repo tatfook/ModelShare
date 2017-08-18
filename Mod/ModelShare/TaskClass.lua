@@ -41,7 +41,7 @@ function TaskClass:Init(xml_node, theme, task_index, category)
 	self:AddID();
 
 	self.task_index = task_index;
-	self.category   =  category;
+	self.category   = category;
 
 	--if(themeKey == "blockwiki") then
 		--local task_name = string.match(self.name,"%d*_(.*)");

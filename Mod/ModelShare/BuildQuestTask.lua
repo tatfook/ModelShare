@@ -31,12 +31,12 @@ ModelBuildQuest.cur_task_index       = nil;
 ModelBuildQuest.cur_theme_index      = nil;
 ModelBuildQuest.template_theme_index = nil;
 
-function ModelBuildQuest:ctor(theme_index, task_index)
-	ModelBuildQuest.cur_theme_index = theme_index or ModelBuildQuest.cur_theme_index or 1;
-	ModelBuildQuest.cur_task_index  = task_index  or ModelBuildQuest.cur_task_index  or 1;
+function ModelBuildQuest:ctor()
+	ModelBuildQuest.cur_theme_index = self.cur_theme_index or ModelBuildQuest.cur_theme_index or 1;
+	ModelBuildQuest.cur_task_index  = self.cur_task_index  or ModelBuildQuest.cur_task_index  or 1;
 
-	ModelBuildQuest.template_theme_index = ModelBuildQuest.template_theme_index or 1;
-	ModelBuildQuest.template_task_index  = ModelBuildQuest.template_task_index  or 1;
+	ModelBuildQuest.template_theme_index = self.template_theme_index or ModelBuildQuest.template_theme_index or 1;
+	ModelBuildQuest.template_task_index  = self.template_task_index  or ModelBuildQuest.template_task_index  or 1;
 end
 
 --[[function ModelBuildQuest:OnInit(theme_index, task_index)

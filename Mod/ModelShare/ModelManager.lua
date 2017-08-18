@@ -122,7 +122,7 @@ function ModelManager.GetTaskName()
 	end
 
     local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
-	echo(task, true);
+	--echo(task, true);
     if(task) then
         return task.name or "";
     else
@@ -173,13 +173,16 @@ function ModelManager.ChangeTheme(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
     index       = tonumber(index);
 
-    --BuildQuest.cur_theme_index = index;
-    ModelBuildQuest.template_theme_index = index;
+   -- ModelBuildQuest.template_theme_index = index;
     --echo(ModelBuildQuest.template_theme_index)
 
-    --ModelBuildQuest:OnInit(ModelBuildQuest.template_theme_index, 1);
+	ModelBuildQuest:new({
+		cur_theme_index      = index,
+		template_theme_index = index, 
+		cur_task_index       = 1,
+	});
 
-    task_index = ModelBuildQuest.cur_task_index;
+    --task_index = ModelBuildQuest.cur_task_index;
 	
 	if(ModelManager.curInstance) then
 		ModelManager.curInstance.RestEditing();
@@ -202,6 +205,8 @@ end
 
 function ModelManager.ChangeTask(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
+
+	echo(index);
 
     ModelBuildQuest.cur_task_index      = tonumber(index);
     ModelBuildQuest.template_task_index = tonumber(index);
@@ -264,7 +269,7 @@ function ModelManager.GetQuestTriggerText()
     else
         local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
-        if(task and task:IsClickOnceDeploy()) then
+        if(task and task.type == "template" or type(task.IsClickOnceDeploy) == "function" and task:IsClickOnceDeploy()) then
             s = L"使用";
         else
             s = L"开始建造";
@@ -283,26 +288,45 @@ function ModelManager.StartBuild()
 		end
     --]]
 
-    local cur_task = ModelBuildQuest:GetCurrentQuest();
+	echo(ModelBuildQuest.cur_theme_index);
+	echo(ModelBuildQuest.cur_task_index);
 
-    if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == ModelBuildQuest.cur_theme_index) then
-        ModelBuildQuest:EndEditing();
-        return;
-    end
+	if(ModelBuildQuest.cur_theme_index == 1) then
+		local cur_task = ModelBuildQuest:GetCurrentQuest();
 
-    local UseAbsolutePos  = mouse_button == "right";
-    local ClickOnceDeploy = UseAbsolutePos;
+		if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == ModelBuildQuest.cur_theme_index) then
+			ModelBuildQuest:EndEditing();
+			return;
+		end
 
-    local task = ModelBuildQuest:new({
-                    theme_id = ModelBuildQuest.cur_theme_index, 
-                    task_id  = ModelBuildQuest.cur_task_index, 
-                    step_id  = 1,
-                    UseAbsolutePos  = UseAbsolutePos,
-                    ClickOnceDeploy = ClickOnceDeploy});
+		local UseAbsolutePos  = mouse_button == "right";
+		local ClickOnceDeploy = UseAbsolutePos;
+
+		local task = ModelBuildQuest:new({
+						theme_id = ModelBuildQuest.cur_theme_index, 
+						task_id  = ModelBuildQuest.cur_task_index, 
+						step_id  = 1,
+						UseAbsolutePos  = UseAbsolutePos,
+						ClickOnceDeploy = ClickOnceDeploy});
 	
-	--echo(task, true);
+		--echo(task, true);
 
-    task:Run();
+		task:Run();
+	elseif(ModelBuildQuest.cur_theme_index == 2) then
+		_guihelper.MessageBox(L"使用template生成");
+	end
 
     ModelManager.ClosePage();
+end
+
+function ModelManager.deleteTemplate()
+	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
+		if(res and res == _guihelper.DialogResult.Yes) then
+			--deleteNow();
+		end
+	end, _guihelper.MessageBoxButtons.YesNo);
+end
+
+function ModelManager.shareTemplate()
+	_guihelper.MessageBox(L"分享模板");
 end

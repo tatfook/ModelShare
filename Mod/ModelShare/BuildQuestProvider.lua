@@ -48,7 +48,7 @@ function ModelBuildQuestProvider:ctor()
 	ModelBuildQuestProvider.themesDS         = {};
 	ModelBuildQuestProvider.localthemesDS    = {};
 
-	echo("Init BuildQuestProvider");
+	--echo("Init BuildQuestProvider");
 	local currentWorldPath = GameLogic.GetWorldDirectory():gsub("\\","/");
 
 	ModelBuildQuestProvider.categoryPaths['worldTemplate'] = currentWorldPath .. "blocktemplates/";
@@ -220,7 +220,8 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 	
 	local tasksDS = cur_themes[theme_index].tasksDS;
 	local tasks   = cur_themes[theme_index].tasks;
-	
+
+	--echo(tasks_output);
 	if(themeKey == "globalTemplate") then
 		for _, task_item in ipairs(tasks_output) do
 			local taskname;
@@ -271,11 +272,9 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 	end
 
 	if(themeKey == "worldTemplate") then
-		echo("worldTemplate, tasks_output");
-		echo(tasks_output);
 		for _, task_item in ipairs(tasks_output) do
 			local taskpath = themePath .. task_item;
-			echo(taskpath);
+			--echo(taskpath);
 		end
 
 		for _, task_item in ipairs(tasks_output) do 
@@ -294,7 +293,10 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				tasksDS[#tasksDS].task_index = #tasksDS;
 
 				local task_index  = #tasks + 1;
-				tasks[task_index] = {name = name};
+				tasks[task_index] = {
+					name = name,
+					type = "template",
+				};
 			end
 		end
 	end
