@@ -28,6 +28,8 @@ ShareWindow.global_template_dir     = "worlds/DesignHouse/blocktemplates/"
 ShareWindow.default_template_dir    = "worlds/DesignHouse/blocktemplates/";
 
 function ShareWindow:ctor()
+	ShareWindow.template_label = {};
+	ShareWindow.savePath       = "world";
 end
 
 function ShareWindow:init()
@@ -79,13 +81,24 @@ function ShareWindow:SetPage()
 	self.page = document.GetPageCtrl();
 end
 
-function ShareWindow:PageRefresh()
-	self.page:Refresh(0.01);
+function ShareWindow.GetPage()
+	if(not ShareWindow.curInstance.page) then
+		return;
+	end
+
+	return ShareWindow.curInstance.page;
 end
 
-function ShareWindow.Refresh()
+function ShareWindow:PageRefresh(sec)
+	local templateName = self.page:GetValue("templateName");
+	self.page:SetNodeValue("templateName", templateName);
+
+	self.page:Refresh(sec or 0.01);
+end
+
+function ShareWindow.Refresh(sec)
 	if(ShareWindow.curInstance) then
-		ShareWindow.curInstance:PageRefresh();
+		ShareWindow.curInstance:PageRefresh(sec);
 	end
 end
 
@@ -128,7 +141,7 @@ function ShareWindow.OnClickTakeSnapshot()
 	if(MyCompany.Apps.ScreenShot.SnapshotPage.TakeSnapshot(ShareWindow.SnapShotPath, 80, 80, false, false)) then
 		-- refresh image
 		ParaAsset.LoadTexture("", ShareWindow.SnapShotPath,1):UnloadAsset();
-		echo(ShareWindow.SnapShotPath);
+		--echo(ShareWindow.SnapShotPath);
 		ShareWindow.Refresh();
 	else
 		_guihelper.MessageBox(L"截图失败了, 请确定您有权限读写磁盘")
@@ -137,40 +150,60 @@ function ShareWindow.OnClickTakeSnapshot()
 
 end
 
-function ShareWindow.closePage()
+function ShareWindow.ClosePage()
 	if(ShareWindow.curInstance) then
 		ShareWindow.curInstance:OnClose();
 	end
 end
 
-function ShareWindow.setSavePath()
+function ShareWindow.SetSavePath()
 	local page = ShareWindow.curInstance.page;
 
 	if(page) then
 		ShareWindow.savePath = page:GetValue("savePath");
 
-		page:Refresh(0.01);
+		ShareWindow.Refresh();
 	end
 end
 
-function ShareWindow.beLocal()
+function ShareWindow.BeLocal()
 	local savePath = ShareWindow.savePath;
 
 	if(savePath == "world" or savePath == "global") then
 		return true;
-	elseif(savePath == "cloud" or savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
+	end
+end
+
+function ShareWindow.BeShare()
+	local savePath = ShareWindow.savePath;
+
+	if(savePath == "cloud") then
+		return true;
+	end
+end
+
+function ShareWindow.BeBoth()
+	local savePath = ShareWindow.savePath;
+
+	if(savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
+		return true;
+	end
+end
+
+function ShareWindow.IsShareButton()
+	local savePath = ShareWindow.savePath;
+
+	if(savePath == "world" or savePath == "global" or savePath == "cloud") then
+		return true;
+	elseif(savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
 		return false;
 	else
 		return true;
 	end
 end
 
-function ShareWindow.localSave()
-	if(not ShareWindow.curInstance.page) then
-		return;
-	end
-
-	local page = ShareWindow.curInstance.page;
+function ShareWindow.LocalSave(template_dir)
+	local page = ShareWindow.GetPage();
 
 	local bSaveSnapshot;
 	local isThemedTemplate;
@@ -178,7 +211,9 @@ function ShareWindow.localSave()
 
 	local template_base_dir = ShareWindow.default_template_dir;--ShareWindow.template_save_dir or ShareWindow.default_template_dir;
 
-	local template_dir      = page:GetValue("savePath");
+	if(not template_dir) then
+		template_dir = page:GetValue("savePath");
+	end
 
 	if(template_dir == "world") then
 		isSaveInLocalWorld = true;
@@ -195,7 +230,7 @@ function ShareWindow.localSave()
 
 	local name = {};
 
-    name.utf8 = page:GetUIValue("templateName"); --or page:GetUIValue("tl_name") or "";
+    name.utf8 = page:GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
 	name.utf8 = name.utf8:gsub("%s", "");
 
 	local desc = page:GetUIValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
@@ -264,8 +299,49 @@ function ShareWindow.localSave()
 	end
 end
 
-function ShareWindow.cloudAndLocalSave()
+function ShareWindow.CloudSave()
+	local template_base_dir = ShareWindow.default_template_dir;
 
+	local name = {};
+
+    name.utf8    = ShareWindow.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+	name.utf8    = name.utf8:gsub("%s", "");
+	name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
+
+	filename = format("%s%s.blocks.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
+
+	if(ParaIO.DoesFileExist(filename)) then
+		echo("-------");
+	end
+
+	--ShareWindow.LocalSave("global");
+end
+
+function ShareWindow.CloudAndLocalSave()
+
+end
+
+function ShareWindow.RefreshTemplateLabel()
+	ShareWindow.GetTemplateLabel();
+	ShareWindow.Refresh(3);
+end
+
+function ShareWindow.GetTemplateLabel()
+	local templateLabel = ShareWindow.GetPage():GetValue("templateLabel");
+
+	ShareWindow.GetPage():SetNodeValue("templateLabel", templateLabel);
+
+	local templateLabelTabel = {};
+
+	for item in string.gmatch(templateLabel,"[^;]+") do
+		templateLabelTabel[#templateLabelTabel + 1] = {
+			name = item,
+		};
+	end
+
+	ShareWindow.template_label = templateLabelTabel;
+
+	return ShareWindow.template_label;
 end
 
 function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSaveSnapshot)
