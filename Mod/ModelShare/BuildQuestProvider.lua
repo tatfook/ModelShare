@@ -279,7 +279,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 		for _, task_item in ipairs(tasks_output) do 
 			local name = task_item:match("([^/\\]+)%.blocks%.xml$");
-
+			
 			if(name) then
 				--file.text     = commonlib.Encoding.url_decode(commonlib.Encoding.DefaultToUtf8(file.text));
 				--file.filename = GameLogic.current_worlddir .. "blocktemplates/" .. file.filename;
@@ -293,9 +293,11 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				tasksDS[#tasksDS].task_index = #tasksDS;
 
 				local task_index  = #tasks + 1;
+
 				tasks[task_index] = {
-					name = name,
-					type = "template",
+					name     = name,
+					type     = "template",
+					filename = ModelBuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
 				};
 			end
 		end

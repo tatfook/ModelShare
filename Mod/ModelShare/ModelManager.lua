@@ -206,7 +206,7 @@ end
 function ModelManager.ChangeTask(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
 
-	echo(index);
+	--echo(index);
 
     ModelBuildQuest.cur_task_index      = tonumber(index);
     ModelBuildQuest.template_task_index = tonumber(index);
@@ -313,7 +313,9 @@ function ModelManager.StartBuild()
 
 		task:Run();
 	elseif(ModelBuildQuest.cur_theme_index == 2) then
-		_guihelper.MessageBox(L"使用template生成");
+		local curTheme = ModelBuildQuestProvider.themes[ModelBuildQuest.cur_theme_index];
+
+		ModelBuildQuest.CreateFromTemplate(curTheme.tasks[ModelBuildQuest.cur_task_index].filename);
 	end
 
     ModelManager.ClosePage();

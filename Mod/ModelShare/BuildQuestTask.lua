@@ -15,6 +15,7 @@ NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/API/UserProfile.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/HelpPage.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/QuickSelectBar.lua");
+NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 
 --local BuildQuest              = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
 --local BuildQuestProvider      = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
@@ -23,6 +24,8 @@ local HelpPage                = commonlib.gettable("MyCompany.Aries.Game.Tasks.H
 local UserProfile             = commonlib.gettable("MyCompany.Aries.Creator.Game.API.UserProfile");
 local QuickSelectBar          = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.QuickSelectBar");
 local TaskManager             = commonlib.gettable("MyCompany.Aries.Game.TaskManager")
+local BlockTemplate           = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
+local BlockEngine             = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 
 local ModelBuildQuest = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Task"), commonlib.gettable("Mod.ModelShare.BuildQuest"));
 
@@ -226,4 +229,31 @@ function ModelBuildQuest:Run()
 	-- BuildQuest.ShowPage();
 
 	self:StartEditing();
+end
+
+function ModelBuildQuest.CreateFromTemplate(filename, x, y, z)
+	if(not x) then
+		x, y, z = ParaScene.GetPlayer():GetPosition();
+	end
+
+	local bx, by, bz = BlockEngine:block(x, y+0.1, z);
+	
+	if(not ModelBuildQuest.LoadTemplate(filename, bx, by, bz, true)) then
+		_guihelper.MessageBox(format(L"无法打开文件:%s", commonlib.Encoding.DefaultToUtf8(filename)))
+	end
+end
+
+-- public function to load from a template to a given scene position.
+-- @return true if created
+function ModelBuildQuest.LoadTemplate(filename, bx, by, bz, bSelect)
+	local task = BlockTemplate:new({
+		operation = BlockTemplate.Operations.Load,
+		filename = filename,
+		blockX = bx,
+		blockY = by,
+		blockZ = bz,
+		bSelect=bSelect
+	});
+
+	return task:Run();
 end
