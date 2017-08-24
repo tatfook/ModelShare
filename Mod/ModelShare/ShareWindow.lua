@@ -372,19 +372,19 @@ function ShareWindow.CloudSave(type)
 
 		upload();
 	elseif(type == "world") then
-
+		echo("分享至世界存档");
 	end
 end
 
 function ShareWindow.CloudAndLocalSave()
 	local savePath = ShareWindow.GetPage():GetValue("savePath");
-
+	--echo(savePath);
 	if(savePath == "cloudAndWorld") then
-		ShareWindow.LocalSave("local");
-		
+		ShareWindow.LocalSave("world");
+		ShareWindow.CloudSave("world")
 	elseif(savePath == "cloudAndGlobal") then
 		ShareWindow.LocalSave("global");
-
+		ShareWindow.CloudSave("cloud");
 	end
 end
 
