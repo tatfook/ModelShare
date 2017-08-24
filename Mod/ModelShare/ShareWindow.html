@@ -79,12 +79,13 @@
                             <textarea name="templateDesc" style="height:100px;" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>'></textarea>
                         </div>
                         <div style="margin-top:5px;">
-                            方块数量：<%= #ShareWindow.blocks %>     体积：30*30*30
+                            方块数量：<%= #ShareWindow.blocks %>
+                            体积：30 * 30 * 30
                         </div>
                     </div>
                     <pe:if condition="<%= not curShareWindow.IsShareButton() %>" >
                         <div style="margin-top:5px;">
-                            <input type="checkbox" checked="checked"/>分享作品
+                            <input type="checkbox" name="isShare" checked="checked"/>分享作品
                         </div>
                     </pe:if>
                     <div style="margin-top:5px;">

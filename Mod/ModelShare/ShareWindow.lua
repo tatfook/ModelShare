@@ -12,12 +12,16 @@ local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
 NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)script/kids/3DMapSystemUI/ScreenShot/SnapshotPage.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
+NPL.load("(gl)Mod/WorldShare/sync/SyncMain.lua");
+NPL.load("(gl)Mod/WorldShare/service/LocalService.lua");
 
 local loginMain       = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local BlockTemplate   = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
 local BlockEngine     = commonlib.gettable("MyCompany.Aries.Game.BlockEngine");
 local SelectBlocks    = commonlib.gettable("MyCompany.Aries.Game.Tasks.SelectBlocks");
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
+local SyncMain        = commonlib.gettable("Mod.WorldShare.sync.SyncMain");
+local LocalService    = commonlib.gettable("Mod.WorldShare.service.LocalService");
 
 local ShareWindow = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ShareWindow"));
 
@@ -71,6 +75,26 @@ function ShareWindow:ShowPage()
 			cancelShowAnimation = true,
 		});
 	end
+end
+
+function ShareWindow:FolderToCloud()
+	System.App.Commands.Call("File.MCMLWindowFrame", {
+		url  = "Mod/ModelShare/ShareWindow.html", 
+		name = "ShareWindow",
+		isShowTitleBar = false,
+		DestroyOnClose = true, -- prevent many ViewProfile pages staying in memory / false will only hide window
+		style = CommonCtrl.WindowFrame.ContainerStyle,
+		zorder = 0,
+		allowDrag = true,
+		bShow = bShow,
+		directPosition = true,
+			align = "_ct",
+			x = -450/2,
+			y = -500/2,
+			width = 450,
+			height = 500,
+		cancelShowAnimation = true,
+	});
 end
 
 function ShareWindow:SetInstance()
@@ -193,9 +217,9 @@ end
 function ShareWindow.IsShareButton()
 	local savePath = ShareWindow.savePath;
 
-	if(savePath == "world" or savePath == "global" or savePath == "cloud") then
+	if(savePath == "world" or savePath == "global") then
 		return true;
-	elseif(savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
+	elseif(savePath == "cloud" or savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
 		return false;
 	else
 		return true;
@@ -256,8 +280,8 @@ function ShareWindow.LocalSave(template_dir)
 
 		--local subdir = template_dir; -- commonlib.Encoding.Utf8ToDefault(template_dir);
 
-		filename     = format("%s%s.blocks.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
-		taskfilename = format("%s%s.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
+		filename     = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
+		taskfilename = format("%s%s.xml", template_base_dir .. name.default .. "/", name.default);
 	else
 		return;
 		--filename = format("%s%s.blocks.xml", template_base_dir, name_normalized);
@@ -299,26 +323,69 @@ function ShareWindow.LocalSave(template_dir)
 	end
 end
 
-function ShareWindow.CloudSave()
-	local template_base_dir = ShareWindow.default_template_dir;
-
-	local name = {};
-
-    name.utf8    = ShareWindow.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
-	name.utf8    = name.utf8:gsub("%s", "");
-	name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
-
-	filename = format("%s%s.blocks.xml", template_base_dir .. "/" .. name.default .. "/", name.default);
-
-	if(ParaIO.DoesFileExist(filename)) then
-		echo("-------");
+function ShareWindow.CloudSave(type)
+	if(not type) then
+		type = "cloud";
 	end
 
-	--ShareWindow.LocalSave("global");
+	if(type == "cloud") then
+		local template_base_dir = ShareWindow.default_template_dir;
+
+		local isShare  = ShareWindow.GetPage():GetValue("isShare");
+
+		local name   = {};
+		name.utf8    = ShareWindow.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		name.utf8    = name.utf8:gsub("%s", "");
+		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
+
+		filename = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
+
+		if(not ParaIO.DoesFileExist(filename)) then
+			ShareWindow.LocalSave("global");
+		end
+
+		local curLocalService = LocalService:new();
+		local path            = template_base_dir .. name.default .. "/";
+
+		local files = curLocalService:LoadFiles(path);
+
+		local file_index = 1;
+
+		local function upload()
+			if(file_index <= #files) then
+				SyncMain:uploadService(
+					loginMain.keepWorkDataSource,
+					"templates/" .. name.utf8 .. "/" .. files[file_index].filename,
+					files[file_index].file_content_t,
+					function(bIsUpload, filename)
+						if(bIsUpload) then
+							file_index = file_index + 1;
+							upload();
+						end
+					end,
+					loginMain.keepWorkDataSourceId
+				);
+			else
+				_guihelper.MessageBox(L"上传完成！");
+			end
+		end
+
+		upload();
+	elseif(type == "world") then
+
+	end
 end
 
 function ShareWindow.CloudAndLocalSave()
+	local savePath = ShareWindow.GetPage():GetValue("savePath");
 
+	if(savePath == "cloudAndWorld") then
+		ShareWindow.LocalSave("local");
+		
+	elseif(savePath == "cloudAndGlobal") then
+		ShareWindow.LocalSave("global");
+
+	end
 end
 
 function ShareWindow.RefreshTemplateLabel()
@@ -379,7 +446,7 @@ function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSav
 			shadow=true,
 		});
 		
-		ShareWindow.closePage();
+		ShareWindow.ClosePage();
 
 		if(type(callbackFunc) == "function") then
 			callbackFunc();
@@ -394,6 +461,8 @@ function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSav
 end
 
 function ShareWindow.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
+	echo("filename");
+	echo(filename);
 	local blocks = _blocks;
 	local file   = ParaIO.open(filename, "w");
 

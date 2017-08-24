@@ -12,10 +12,12 @@ local ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
 NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
+NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
 
 local loginMain               = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local ModelBuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest");
 local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
+local ShareWindow             = commonlib.gettable("Mod.ModelShare.ShareWindow");
 
 local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ModelManager"));
 
@@ -330,5 +332,7 @@ function ModelManager.deleteTemplate()
 end
 
 function ModelManager.shareTemplate()
-	_guihelper.MessageBox(L"分享模板");
+	local curShareWindow = ShareWindow:new();
+	curShareWindow:SetInstance();
+	curShareWindow:FolderToCloud();
 end
