@@ -9,11 +9,11 @@ NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
 local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)script/kids/3DMapSystemUI/ScreenShot/SnapshotPage.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BlockTemplateTask.lua");
 NPL.load("(gl)Mod/WorldShare/sync/SyncMain.lua");
 NPL.load("(gl)Mod/WorldShare/service/LocalService.lua");
+NPL.load("(gl)Mod/WorldSahre/service/HttpRequest.lua");
 
 local loginMain       = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local BlockTemplate   = commonlib.gettable("MyCompany.Aries.Game.Tasks.BlockTemplate");
@@ -22,6 +22,7 @@ local SelectBlocks    = commonlib.gettable("MyCompany.Aries.Game.Tasks.SelectBlo
 local BroadcastHelper = commonlib.gettable("CommonCtrl.BroadcastHelper");
 local SyncMain        = commonlib.gettable("Mod.WorldShare.sync.SyncMain");
 local LocalService    = commonlib.gettable("Mod.WorldShare.service.LocalService");
+local HttpRequest     = commonlib.gettable("Mod.WorldShare.service.HttpRequest");
 
 local ShareWindow = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ShareWindow"));
 
@@ -278,13 +279,10 @@ function ShareWindow.LocalSave(template_dir)
 	elseif(isThemedTemplate) then
 		ParaIO.CreateDirectory(template_base_dir);
 
-		--local subdir = template_dir; -- commonlib.Encoding.Utf8ToDefault(template_dir);
-
 		filename     = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
 		taskfilename = format("%s%s.xml", template_base_dir .. name.default .. "/", name.default);
 	else
 		return;
-		--filename = format("%s%s.blocks.xml", template_base_dir, name_normalized);
 	end
 
 	local function doSave_()
@@ -302,13 +300,15 @@ function ShareWindow.LocalSave(template_dir)
 			pivot           = pivot,
 			relative_motion = page:GetValue("checkboxRelativeMotion", false),
 		},function ()
-
-			if(isThemedTemplate) then
+			if(isSaveInLocalWorld) then
+				local imageFileName = format("%s%s.jpg", GameLogic.current_worlddir .. "blocktemplates/", name.default);
+				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
+			elseif(isThemedTemplate) then
+				local imageFileName = format("%s%s.jpg", template_base_dir .. name.default .. "/", name.default);
+				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
 				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name.utf8, ShareWindow.blocks, desc);
 				--BuildQuestProvider.RefreshDataSource();
 			end
-
-			--GameLogic.GetFilters():apply_filters("file_exported", "template", filename);
 		end, bSaveSnapshot);
 	end
 
@@ -323,9 +323,38 @@ function ShareWindow.LocalSave(template_dir)
 	end
 end
 
+function ShareWindow.CloudApi()
+	return loginMain.site .. "/api/mod/modelshare/models/modelshare/";
+end
+
 function ShareWindow.CloudSave(type)
 	if(not type) then
 		type = "cloud";
+	end
+
+	if(true)then
+		local params = {
+			templateName = "test",
+			blocks       = "15",
+			volume       = "16",
+			isShare      = 1,
+		};
+
+		echo("Send");
+
+		HttpRequest:GetUrl({
+			url     = ShareWindow.CloudApi() .. "add",
+			json    = true,
+			headers = {
+				Authorization = "Bearer " .. loginMain.token,
+			},
+			form    = params,
+		},function(data, err)
+			echo(data);
+			echo(err);
+		end);
+
+		return;
 	end
 
 	if(type == "cloud") then
@@ -338,10 +367,15 @@ function ShareWindow.CloudSave(type)
 		name.utf8    = name.utf8:gsub("%s", "");
 		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
-		filename = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
+		local filename = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
+		local infoCard = format("%s%s.txt", template_base_dir .. name.default .. "/", name.default);
 
 		if(not ParaIO.DoesFileExist(filename)) then
 			ShareWindow.LocalSave("global");
+
+			local templateInfo = {};
+			templateInfo.sn   = "";
+			templateInfo.date = ""; 
 		end
 
 		local curLocalService = LocalService:new();
@@ -370,7 +404,7 @@ function ShareWindow.CloudSave(type)
 			end
 		end
 
-		upload();
+		--upload();
 	elseif(type == "world") then
 		echo("分享至世界存档");
 	end

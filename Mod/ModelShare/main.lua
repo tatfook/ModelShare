@@ -9,7 +9,6 @@ NPL.load("(gl)Mod/ModelShare/main.lua");
 local ModelShare = commonlib.gettable("Mod.ModelShare");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
 NPL.load("(gl)Mod/ModelShare/ModelManager.lua");
 

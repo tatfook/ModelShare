@@ -9,7 +9,6 @@ NPL.load("(gl)Mod/ModelShare/ModelManager.lua");
 local ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/WorldShare/login/LoginMain.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
@@ -330,7 +329,7 @@ function ModelManager.StartBuild()
     ModelManager.ClosePage();
 end
 
-function ModelManager.deleteTemplate()
+function ModelManager.DeleteTemplate()
 	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
 		if(res and res == _guihelper.DialogResult.Yes) then
 			local curTheme = ModelBuildQuestProvider.themes[ModelBuildQuest.cur_theme_index];
