@@ -69,6 +69,17 @@ function ModelManager.Refresh()
 	end
 end
 
+function ModelManager.RefreshList()
+	if(ModelManager.curInstance) then
+		self = ModelManager.curInstance;
+
+		ModelBuildQuest:new();
+		self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+
+		self.page:Refresh(0.01);
+	end
+end
+
 function ModelManager:OnClose()
 	if(self.page) then
 		self.page:CloseWindow();
@@ -271,7 +282,11 @@ function ModelManager.GetQuestTriggerText()
     else
         local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
-        if(task and task.type == "template" or type(task.IsClickOnceDeploy) == "function" and task:IsClickOnceDeploy()) then
+		if(task == nil) then
+			return "";
+		end
+
+        if(task.type == "template" or type(task.IsClickOnceDeploy) == "function" and task:IsClickOnceDeploy()) then
             s = L"使用";
         else
             s = L"开始建造";
@@ -282,16 +297,8 @@ function ModelManager.GetQuestTriggerText()
 end
 
 function ModelManager.StartBuild()
-    --[[
-		local islocked = TaskIsLocked(task_index);
-		if(islocked) then
-		_guihelper.MessageBox(L"该任务还未解锁，目前不可建造！");
-		return;
-		end
-    --]]
-
-	echo(ModelBuildQuest.cur_theme_index);
-	echo(ModelBuildQuest.cur_task_index);
+	--echo(ModelBuildQuest.cur_theme_index);
+	--echo(ModelBuildQuest.cur_task_index);
 
 	if(ModelBuildQuest.cur_theme_index == 1) then
 		local cur_task = ModelBuildQuest:GetCurrentQuest();
@@ -326,7 +333,28 @@ end
 function ModelManager.deleteTemplate()
 	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
 		if(res and res == _guihelper.DialogResult.Yes) then
-			--deleteNow();
+			local curTheme = ModelBuildQuestProvider.themes[ModelBuildQuest.cur_theme_index];
+			local curTask  = curTheme.tasks[ModelBuildQuest.cur_task_index];
+
+			if(ModelBuildQuest.cur_task_index == #curTheme.tasks) then
+				ModelBuildQuest.cur_task_index = ModelBuildQuest.cur_task_index - 1;
+			end
+
+			if (curTheme.themeKey == "globalTemplate") then
+				if(ParaIO.DoesFileExist(curTask.filepath)) then
+					ParaIO.DeleteFile(curTask.dir);
+					ModelManager.RefreshList();
+				else
+					_guihelper.MessageBox(L"删除失败");
+				end
+			elseif(curTheme.themeKey == "worldTemplate") then
+				if(ParaIO.DoesFileExist(curTask.filename)) then
+					ParaIO.DeleteFile(curTask.filename);
+					ModelManager.RefreshList();
+				else
+					_guihelper.MessageBox(L"删除失败");
+				end
+			end
 		end
 	end, _guihelper.MessageBoxButtons.YesNo);
 end

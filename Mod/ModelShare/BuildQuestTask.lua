@@ -42,44 +42,6 @@ function ModelBuildQuest:ctor()
 	ModelBuildQuest.template_task_index  = self.template_task_index  or ModelBuildQuest.template_task_index  or 1;
 end
 
---[[function ModelBuildQuest:OnInit(theme_index, task_index)
-	--echo("HelpPage.cur_category")
-	--echo(HelpPage.cur_category)
-	--echo(HelpPage.task_index)
-
---	if(HelpPage.cur_category and (HelpPage.cur_category == "command" or HelpPage.cur_category == "shortcutkey")) then
---		return;
---	end
-
-	--curModelBuildQuestProvider = ModelBuildQuestProvider:new();
-
-	ModelBuildQuest.cur_theme_index = theme_index or ModelBuildQuest.cur_theme_index or 1;
-	ModelBuildQuest.cur_task_index  = task_index  or ModelBuildQuest.cur_task_index  or 1;
-
---	if(HelpPage.cur_category and HelpPage.cur_category == "tutorial") then
---		self.cur_task_index = BuildQuest.GetCurrentFinishedTaskIndex(nil,HelpPage.cur_category);
---	else
---		self.cur_task_index = 1;
---	end
-
-	--local cur_theme_taskDS = curModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.cur_theme_index);
-
-	--if(cur_theme_taskDS and ModelBuildQuest.cur_task_index > #cur_theme_taskDS) then
-		--ModelBuildQuest.cur_task_index = #cur_theme_taskDS;
-	--end
-
-	--HelpPage.cur_category = HelpPage.cur_category or "template";
-
-	--if(ModelBuildQuestProvider.inited) then
-		--return;
-	--end
-
-	--ModelBuildQuestProvider.inited = true;
-
-	ModelBuildQuest.template_theme_index = ModelBuildQuest.template_theme_index or 1;
-	ModelBuildQuest.template_task_index  = ModelBuildQuest.template_task_index  or 1;
-end]]
-
 function ModelBuildQuest.GetCurrentQuest()
 	return ModelBuildQuest.cur_instance;
 end

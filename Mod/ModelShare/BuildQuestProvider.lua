@@ -69,29 +69,11 @@ function ModelBuildQuestProvider:LoadFromFile()
 	end
 end
 
-function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
-	--[[if(themeKey == "globalTemplate") then
-		ModelBuildQuestProvider.categoryDS[themeKey]["themes"]   = ModelBuildQuestProvider.themes;
-		ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"] = ModelBuildQuestProvider.themesDS;
-	end]]
-	
+function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)	
 	local cur_themes     = ModelBuildQuestProvider.themes;--categoryDS[themeKey]["themes"];
 	local cur_themesDS   = ModelBuildQuestProvider.themesDS;--ModelBuildQuestProvider.categoryDS[themeKey]["themesDS"];
 	local cur_themesType = ModelBuildQuestProvider.categoryDS[themeKey]["themesType"];
 	local beOfficial     = ModelBuildQuestProvider.categoryDS[themeKey]["beOfficial"];
-
-	--BuildQuestProvider.PrepareGlobalTemplateDir();
-	--直接使用 worlds/DesignHouse/blocktemplates/
-
-	--[[local output = self:GetFiles(themePath, function (msg)
-		if(msg.filesize == 0 or string.match(msg.filename,"%.zip$")) then
-			-- folder or zip file
-			return true;
-		elseif(string.match(msg.filename,"blocks%.xml$")) then
-			-- never execute here
-			hasOldGlobalFiles = true;
-		end
-	end, "*.*");]]
 
 	local hasOldGlobalFiles;
 
@@ -100,55 +82,7 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		self:TranslateGlobalTemplateToBuildingTask(true);
 	end
 
-	--[[for _, theme_item in ipairs(output) do --取消获取子目录
-	end]]
-
-	--local theme_name     = string.match(theme_item, "^(.*).zip$");
-	--local isThemeZipFile = false;
-
-	--[[if(theme_name) then
-		local filename = themePath .. theme_item;
-
-		ParaAsset.OpenArchive(filename, true);
-
-		isThemeZipFile = true;
-	else
-		theme_name = theme_item;
-	end]]
-	
-	--local theme_path      = themePath .. theme_name .. "/";
-	--local theme_name_utf8 = commonlib.Encoding.DefaultToUtf8(theme_name);
 	local order = 10;
-
-	--[[if(not isThemeZipFile) then
-		local theme_info_file = theme_path .. "info.xml";
-		local xmlRoot         = ParaXML.LuaXML_ParseFile(theme_info_file);
-
-		if(xmlRoot) then
-			for node in commonlib.XPath.eachNode(xmlRoot, "/Theme") do
-				local attr = node.attr;
-
-				if(attr and attr.name) then
-					theme_name_utf8 = L(attr.name); --set info,xml theme_name
-
-					if(attr.order) then
-						order = tonumber(attr.order) or order;
-					end
-
-					break;
-				end
-			end
-		end
-	end
-
-	local insert_index;
-
-	for _, item in ipairs(cur_themesDS) do
-		if((item.order or 10 ) > order) then
-			insert_index = i;
-			break;
-		end
-	end]]
 	
 	local theme_ds_name;
 
@@ -182,29 +116,11 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		themeKey     = themeKey
 	});
 
-	--echo(cur_themes, true);
-
-	--ModelBuildQuestProvider.localthemesDS[#ModelBuildQuestProvider.localthemesDS + 1] = {value = theme_name_utf8};
-	
 	if(not isThemeZipFile) then
 		local next_theme_type_index           = #cur_themesType + 1;
 		cur_themesType[next_theme_type_index] = {text = theme_name_utf8, value = theme_name};
 	end
 	
-	--[[if(insert_index) then
-		table.insert(cur_themesDS , insert_index, cur_themesDS[theme_index]);
-		cur_themesDS[theme_index + 1]   = nil;
-
-		table.insert(cur_themes   , insert_index, cur_themes[theme_index]);
-		cur_themes[theme_index + 1]    = nil;
-
-		table.insert(localthemesDS, insert_index, localthemesDS[theme_index]);
-		localthemesDS[theme_index + 1] = nil;
-
-		theme_index = insert_index;
-	end]]
-
-	--local theme_path = themePath..theme_name.."/";
 	local tasks_output;
 
 	if(isThemeZipFile) then
@@ -255,14 +171,6 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 				local task_index  = #tasks + 1;
 				tasks[task_index] = TaskClass:new(node.attr):Init(node, cur_themes[theme_index], task_index, themeKey);
-			
-				--[[if(themeKey == "blockwiki") then
-					local block_id, task_name   = string.match(tasksDS[#tasksDS].name,"(%d*)_(.*)");
-					tasksDS[#tasksDS].block_id  = tonumber(block_id);
-					--tasksDS[#tasksDS].name = task_name;
-				end]]
-
-				--myTaskMap[node.attr.name] = {task_index = task_index, task_ds_index = #myTasksDS};
 			end
 		end
 
@@ -281,15 +189,11 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 			local name = task_item:match("([^/\\]+)%.blocks%.xml$");
 			
 			if(name) then
-				--file.text     = commonlib.Encoding.url_decode(commonlib.Encoding.DefaultToUtf8(file.text));
-				--file.filename = GameLogic.current_worlddir .. "blocktemplates/" .. file.filename;
-				--folder_local[#folder_local+1] = {name="file", attr=file};
-
 				tasksDS[#tasksDS + 1] = {};
 
 				local file = {name = name}
 
-				commonlib.partialcopy(tasksDS[#tasksDS],file);
+				commonlib.partialcopy(tasksDS[#tasksDS], file);
 				tasksDS[#tasksDS].task_index = #tasksDS;
 
 				local task_index  = #tasks + 1;
@@ -306,15 +210,6 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 	for i=1, #cur_themes do
 		cur_themes[i].id = i;
 	end
-
-	--[[if (#localthemesDS == 0) then
-		localthemesDS[#localthemesDS + 1] = {value = global_template_name_utf8};
-	end]]
-
-	--echo("cur_themes");
-	--echo(cur_themes, true);
-
-	--self.NeedRefreshDS = false;
 end
 
 function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
