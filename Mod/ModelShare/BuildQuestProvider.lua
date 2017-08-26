@@ -171,6 +171,18 @@ function ModelBuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 				local task_index  = #tasks + 1;
 				tasks[task_index] = TaskClass:new(node.attr):Init(node, cur_themes[theme_index], task_index, themeKey);
+
+				local infoCard     = themePath .. taskname .. "/" .. taskname .. ".info.xml";
+				local templateInfo = ParaXML.LuaXML_ParseFile(infoCard);
+
+				if(templateInfo ~= nil) then
+					tasks[task_index]['infoCard'] = {};
+					local infoCardTable = tasks[task_index]['infoCard'];
+
+					for key, item in ipairs(templateInfo[1]) do
+						infoCardTable[item.name] = item[1];
+					end
+				end
 			end
 		end
 
@@ -275,27 +287,18 @@ function ModelBuildQuestProvider:GetTasks_DS(theme_id, category)
 end
 
 function ModelBuildQuestProvider:GetTheme(theme_id) --category
-	local cur_themes;
-
-	--[[if(category) then
-		cur_themes = ModelBuildQuestProvider.categoryDS[category]["themes"];
-	else
-		cur_themes = ModelBuildQuestProvider.themes;
-	end]]
-
-	cur_themes = ModelBuildQuestProvider.themes;
+	local cur_themes = ModelBuildQuestProvider.themes;
 
 	return cur_themes[theme_id or 1];
 end
 
-function ModelBuildQuestProvider:GetTask(theme_id, task_id, category)
+function ModelBuildQuestProvider:GetTask(theme_id, task_id)
 	if(self == nil) then
-		echo("GetTask NIL");
 		return;
 	end
 
-	local theme = self:GetTheme(theme_id, category);
-
+	local theme = self:GetTheme(theme_id);
+	
 	if(theme) then
 		return theme:GetTask(task_id);
 	end

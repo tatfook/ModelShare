@@ -227,7 +227,7 @@ function ShareWindow.IsShareButton()
 	end
 end
 
-function ShareWindow.LocalSave(template_dir)
+function ShareWindow.LocalSave(template_dir, name)
 	local page = ShareWindow.GetPage();
 
 	local bSaveSnapshot;
@@ -246,19 +246,14 @@ function ShareWindow.LocalSave(template_dir)
 		isThemedTemplate = true;
 	end
 
-	--[[if(template_dir == 0) then
-		isSaveInLocalWorld = true;
-		template_dir       = nil;
-	elseif(template_dir == -1) then
-		template_dir = "";
-	end]]
+	if(not name) then
+		local name = {};
 
-	local name = {};
+		name.utf8 = page:GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		name.utf8 = name.utf8:gsub("%s", "");
+	end
 
-    name.utf8 = page:GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
-	name.utf8 = name.utf8:gsub("%s", "");
-
-	local desc = page:GetUIValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
+	local desc = page:GetValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
 
     desc = string.gsub(desc,"\r?\n","<br/>")
 
@@ -294,6 +289,7 @@ function ShareWindow.LocalSave(template_dir)
 
 		ShareWindow.SaveToTemplate(filename, ShareWindow.blocks, {
 			name            = name.utf8,
+			desc            = desc,
 			author_nid      = System.User.nid,
 			creation_date   = ParaGlobal.GetDateFormat("yyyy-MM-dd") .. "_" .. ParaGlobal.GetTimeFormat("HHmmss"),
 			player_pos      = player_pos,
@@ -332,31 +328,6 @@ function ShareWindow.CloudSave(type)
 		type = "cloud";
 	end
 
-	if(true)then
-		local params = {
-			templateName = "test",
-			blocks       = "15",
-			volume       = "16",
-			isShare      = 1,
-		};
-
-		echo("Send");
-
-		HttpRequest:GetUrl({
-			url     = ShareWindow.CloudApi() .. "add",
-			json    = true,
-			headers = {
-				Authorization = "Bearer " .. loginMain.token,
-			},
-			form    = params,
-		},function(data, err)
-			echo(data);
-			echo(err);
-		end);
-
-		return;
-	end
-
 	if(type == "cloud") then
 		local template_base_dir = ShareWindow.default_template_dir;
 
@@ -367,44 +338,85 @@ function ShareWindow.CloudSave(type)
 		name.utf8    = name.utf8:gsub("%s", "");
 		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
-		local filename = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
-		local infoCard = format("%s%s.txt", template_base_dir .. name.default .. "/", name.default);
+		local desc = ShareWindow.GetPage():GetValue("templateDesc");
+		desc = string.gsub(desc,"\r?\n","<br/>")
 
-		if(not ParaIO.DoesFileExist(filename)) then
-			ShareWindow.LocalSave("global");
+		local params = {
+			templateName = name.utf8,
+			blocks       = #ShareWindow.blocks,
+			volume       = 0,
+			isShare      = isShare and 1 or 0,
+			desc         = desc,
+		};
 
-			local templateInfo = {};
-			templateInfo.sn   = "";
-			templateInfo.date = ""; 
-		end
+		HttpRequest:GetUrl({
+			url     = ShareWindow.CloudApi() .. "add",
+			json    = true,
+			headers = {
+				Authorization = "Bearer " .. loginMain.token,
+			},
+			form    = params,
+		},function(data, err)
+			echo(data, true);
 
-		local curLocalService = LocalService:new();
-		local path            = template_base_dir .. name.default .. "/";
+			local numberName = {};
 
-		local files = curLocalService:LoadFiles(path);
+			numberName.utf8    = data.data.modelsnumber;
+			numberName.default = commonlib.Encoding.Utf8ToDefault(numberName.utf8);
 
-		local file_index = 1;
+			local filename = format("%s%s.blocks.xml", template_base_dir .. numberName.default .. "/", numberName.default);
+			local infoCard = format("%s%s.info.xml", template_base_dir .. numberName.default .. "/", numberName.default);
 
-		local function upload()
-			if(file_index <= #files) then
-				SyncMain:uploadService(
-					loginMain.keepWorkDataSource,
-					"templates/" .. name.utf8 .. "/" .. files[file_index].filename,
-					files[file_index].file_content_t,
-					function(bIsUpload, filename)
-						if(bIsUpload) then
-							file_index = file_index + 1;
-							upload();
-						end
-					end,
-					loginMain.keepWorkDataSourceId
-				);
-			else
-				_guihelper.MessageBox(L"上传完成！");
+			if(not ParaIO.DoesFileExist(filename)) then
+				ShareWindow.LocalSave("global", numberName);
+
+				local templateInfo = {
+					{tostring(data.data.templateName), name = "templateName"},
+					{tostring(data.data.modelsnumber), name = "sn"},
+					{tostring(data.data.createDate)  , name = "createDate"},
+					{tostring(data.data.username)    , name = "username"},
+					{tostring(data.data.blocks)      , name = "blocks"},
+					{tostring(data.data.volume)      , name = "volume"},
+					{tostring(data.data.isShare)     , name = "isShare"},
+					name = "template",
+				};
+
+				local templateInfoXml = commonlib.Lua2XmlString(templateInfo);
+
+				local file = ParaIO.open(infoCard, "w");
+
+				file:write(templateInfoXml,#templateInfoXml);
+				file:close();
 			end
-		end
 
-		--upload();
+			local curLocalService = LocalService:new();
+			local path            = template_base_dir .. name.default .. "/";
+
+			local files = curLocalService:LoadFiles(path);
+
+			local file_index = 1;
+
+			local function upload()
+				if(file_index <= #files) then
+					SyncMain:uploadService(
+						loginMain.keepWorkDataSource,
+						"templates/" .. name.utf8 .. "/" .. files[file_index].filename,
+						files[file_index].file_content_t,
+						function(bIsUpload, filename)
+							if(bIsUpload) then
+								file_index = file_index + 1;
+								upload();
+							end
+						end,
+						loginMain.keepWorkDataSourceId
+					);
+				else
+					_guihelper.MessageBox(L"上传完成！");
+				end
+			end
+
+			upload();
+		end);
 	elseif(type == "world") then
 		echo("分享至世界存档");
 	end

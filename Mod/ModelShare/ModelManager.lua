@@ -142,7 +142,7 @@ function ModelManager.GetTaskName()
     end
 end
 
-function ModelManager.GetTaskDesc()
+function ModelManager.GetTaskInfo()
 	if(ModelManager.curInstance) then
 		self = ModelManager.curInstance;
 	else
@@ -151,13 +151,7 @@ function ModelManager.GetTaskDesc()
 
     local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
-    local desc = "";
-
-    if(task) then
-        desc = task.desc;
-    end
-
-    return desc;
+    return task;
 end
 
 function ModelManager.TaskIsLocked(index)

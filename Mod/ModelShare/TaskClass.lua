@@ -42,25 +42,17 @@ function TaskClass:Init(xml_node, theme, task_index, category)
 
 	self.task_index = task_index;
 	self.category   = category;
-
-	--if(themeKey == "blockwiki") then
-		--local task_name = string.match(self.name,"%d*_(.*)");
-		--self.name = task_name;
-	--end
 	
 	local steps = self.steps;
 
 	local default_src, default_name, default_dir;
 
 	for node in commonlib.XPath.eachNode(xml_node, "/Step") do
-		--if(category == "blockwiki") then
-			--local src = string.format("%s%s.blocks.xml",commonlib.Encoding.DefaultToUtf8(self.dir),self.name);
-			--node.attr.src = src;
-		--end
 		steps[#steps+1] = StepClass:new(node.attr):Init(node, self);
 	end
 
 	self.theme = theme;
+
 	return self;
 end
 

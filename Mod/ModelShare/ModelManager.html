@@ -125,18 +125,18 @@
                         <div style="text-align:center;height:35px;font-size:20px;base-font-size:20px;width:275px;">
                             <%=curModelManager.GetTaskName()%>
                         </div>
-                        <div>模板编号：12345678910</div>
-                        <div>创建日期：2017-06-10</div>
-                        <div>方块数量：65536</div>
-                        <div>体积：128*128*128</div>
-                        <div>用户信息：用户名</div>
-                        <div>分享模板：是</div>
+                        <div>模板编号：<%= curModelManager.GetTaskInfo().infoCard.sn %></div>
+                        <div>创建日期：<%= curModelManager.GetTaskInfo().infoCard.createDate %></div>
+                        <div>方块数量：<%= curModelManager.GetTaskInfo().infoCard.blocks %></div>
+                        <div>体积：<%= curModelManager.GetTaskInfo().infoCard.volume %></div>
+                        <div>用户信息：<%= curModelManager.GetTaskInfo().infoCard.username %></div>
+                        <div>分享模板：<%= curModelManager.GetTaskInfo().infoCard.isShare %></div>
 
                         <pe:if condition='<%=not ModelManager.isEditing %>'>
                             <pe:if condition='<%=curModelManager.CanEditing() %>'>
                                 <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="curModelManager.OnChangeTaskDesc" style="position:relative;margin-top:3px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
                             </pe:if>
-                            <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%=curModelManager.GetTaskDesc() %> </div>
+                            <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%=curModelManager.GetTaskInfo().desc %> </div>
                         </pe:if>
                         <pe:if condition='<%= ModelManager.isEditing %>'>
                             <input type="button" tooltip='<%=L"保存"%>' onclick="curModelManager.OnSaveTaskDesc" style="position:relative;margin-top:3px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
