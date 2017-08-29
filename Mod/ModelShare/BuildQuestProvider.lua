@@ -293,8 +293,29 @@ function ModelBuildQuestProvider:LoadFromCloud()
 			local cur_tasksDS = cur_themes[theme_index].tasksDS;
 			
 			for key, item in ipairs(data.data) do
-				cur_tasksDS[#cur_tasksDS + 1] = {name = item.templateName};
+				local status = false;
+
+				for Lkey,Litem in ipairs(cur_themes[1].tasks) do
+					if(not Litem.infoCard or not Litem.infoCard.sn) then
+						break;
+					end
+
+					--echo(item.modelsnumber);
+					--echo(Litem.infoCard.sn);
+
+					if(tostring(item.modelsnumber) == tostring(Litem.infoCard.sn)) then
+						status = true;
+						break;
+					end
+				end
+
+				cur_tasksDS[#cur_tasksDS + 1] = {
+					name   = item.templateName,
+					status = status,
+				};
 			end
+
+			echo(cur_tasksDS);
 		end)
 	end
 end

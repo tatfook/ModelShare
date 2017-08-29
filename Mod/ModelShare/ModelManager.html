@@ -88,13 +88,25 @@
                         <Columns>
                             <div style="height:32px;">
                                 <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == true %>'>
-                                    <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
+                                    <pe:if condition='<%= Eval("status") %>'>
+                                        <div style="float:left;width:23px;height:23px;background-color:#15e200"></div>
+                                    </pe:if>
+                                    <pe:if condition='<%= not Eval("status") %>'>
+                                        <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
+                                    </pe:if>
+                                    
                                     <input type="button" class="item_text item_text_select" value='<%=Eval("name") %>' enabled="false"/>
                                     <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
                                     <input type="button" class="item_close_button item_button_common" onclick="curModelManager.DeleteTemplate"/>
                                 </pe:if>
                                 <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == false %>'>
-                                    <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
+                                    <pe:if condition='<%= Eval("status") %>'>
+                                        <div style="float:left;width:23px;height:23px;background-color:#15e200"></div>
+                                    </pe:if>
+                                    <pe:if condition='<%= not Eval("status") %>'>
+                                        <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
+                                    </pe:if>
+
                                     <input type="button" class="item_text item_text_unselect" value='<%=Eval("name") %>' onclick="curModelManager.ChangeTask" param1='<%=Eval("index") %>' />
                                     <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
                                     <input type="button" class="item_close_button item_button_common" onclick="curModelManager.DeleteTemplate"/>
@@ -132,10 +144,10 @@
                             <div>方块数量：<%= curModelManager.GetTaskInfo().infoCard.blocks %></div>
                             <div>体积：<%= curModelManager.GetTaskInfo().infoCard.volume %></div>
                             <div>用户信息：<%= curModelManager.GetTaskInfo().infoCard.username %></div>
-                            <div>分享模板：<%= curModelManager.GetTaskInfo().infoCard.isShare %></div>
+                            <div>分享模板：<%= tostring(curModelManager.GetTaskInfo().infoCard.isShare) == "1" and "是" or "否" %></div>
                         </pe:if>
 
-                        <pe:if condition='<%= curModelManager.GetTaskInfo()%>'>
+                        <pe:if condition='<%= curModelManager.GetTaskInfo() and type(curModelManager.GetTaskInfo()) == "table" %>'>
                             <pe:if condition='<%=not ModelManager.isEditing %>'>
                                 <pe:if condition='<%=curModelManager.CanEditing() %>'>
                                     <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="curModelManager.OnChangeTaskDesc" style="position:relative;margin-top:3px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />

@@ -258,7 +258,7 @@ function ModelManager.OnSaveTaskDesc()
     local content = ModelManager.GetPage():GetValue("content", "");
     local desc    = string.gsub(content,"\r\n","<br />");
 
-	echo(desc, true);
+	--echo(desc, true);
 
     self.ModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
     ModelManager.Refresh();
