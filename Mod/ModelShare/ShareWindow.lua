@@ -227,12 +227,16 @@ function ShareWindow.IsShareButton()
 	end
 end
 
-function ShareWindow.LocalSave(template_dir, name)
+function ShareWindow.LocalSave(template_dir, template_name)
 	local page = ShareWindow.GetPage();
 
 	local bSaveSnapshot;
 	local isThemedTemplate;
 	local isSaveInLocalWorld;
+
+	if(type(template_name) == "table") then
+		template_name = nil;
+	end
 
 	local template_base_dir = ShareWindow.default_template_dir;--ShareWindow.template_save_dir or ShareWindow.default_template_dir;
 
@@ -246,23 +250,22 @@ function ShareWindow.LocalSave(template_dir, name)
 		isThemedTemplate = true;
 	end
 
-	if(not name) then
-		local name = {};
+	if(not template_name) then
+		template_name = {};
 
-		name.utf8 = page:GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
-		name.utf8 = name.utf8:gsub("%s", "");
+		template_name.utf8 = page:GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		template_name.utf8 = template_name.utf8:gsub("%s", "");
 	end
 
-	local desc = page:GetValue("templateDesc"); --or page:GetUIValue("template_desc") or "";
-
-    desc = string.gsub(desc,"\r?\n","<br/>")
-
-	if(name.utf8 == "")  then
+	local desc = page:GetUIValue("template_desc"); --or page:GetUIValue("template_desc") or "";
+    desc = string.gsub(desc,"\r?\n","<br/>");
+	
+	if(template_name.utf8 == "")  then
 		_guihelper.MessageBox(L"名字不能为空~");
 		return;
 	end
 
-	name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
+	template_name.default = commonlib.Encoding.Utf8ToDefault(template_name.utf8);
 
 	--isThemedTemplate = template_dir and template_dir ~= "";
 	bSaveSnapshot = false; -- not isThemedTemplate and not isSaveInLocalWorld;
@@ -270,12 +273,12 @@ function ShareWindow.LocalSave(template_dir, name)
     local filename, taskfilename;
 
 	if(isSaveInLocalWorld) then
-		filename = format("%s%s.blocks.xml", GameLogic.current_worlddir .. "blocktemplates/", name.default);
+		filename = format("%s%s.blocks.xml", GameLogic.current_worlddir .. "blocktemplates/", template_name.default);
 	elseif(isThemedTemplate) then
 		ParaIO.CreateDirectory(template_base_dir);
 
-		filename     = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
-		taskfilename = format("%s%s.xml", template_base_dir .. name.default .. "/", name.default);
+		filename     = format("%s%s.blocks.xml", template_base_dir .. template_name.default .. "/", template_name.default);
+		taskfilename = format("%s%s.xml", template_base_dir .. template_name.default .. "/", template_name.default);
 	else
 		return;
 	end
@@ -288,7 +291,7 @@ function ShareWindow.LocalSave(template_dir, name)
 		local pivot = string.format("%d,%d,%d", ShareWindow.pivot[1], ShareWindow.pivot[2], ShareWindow.pivot[3]);
 
 		ShareWindow.SaveToTemplate(filename, ShareWindow.blocks, {
-			name            = name.utf8,
+			name            = template_name.utf8,
 			desc            = desc,
 			author_nid      = System.User.nid,
 			creation_date   = ParaGlobal.GetDateFormat("yyyy-MM-dd") .. "_" .. ParaGlobal.GetTimeFormat("HHmmss"),
@@ -297,12 +300,12 @@ function ShareWindow.LocalSave(template_dir, name)
 			relative_motion = page:GetValue("checkboxRelativeMotion", false),
 		},function ()
 			if(isSaveInLocalWorld) then
-				local imageFileName = format("%s%s.jpg", GameLogic.current_worlddir .. "blocktemplates/", name.default);
+				local imageFileName = format("%s%s.jpg", GameLogic.current_worlddir .. "blocktemplates/", template_name.default);
 				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
 			elseif(isThemedTemplate) then
-				local imageFileName = format("%s%s.jpg", template_base_dir .. name.default .. "/", name.default);
+				local imageFileName = format("%s%s.jpg", template_base_dir .. template_name.default .. "/", template_name.default);
 				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
-				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), name.utf8, ShareWindow.blocks, desc);
+				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), template_name.utf8, ShareWindow.blocks, desc);
 				--BuildQuestProvider.RefreshDataSource();
 			end
 		end, bSaveSnapshot);
@@ -328,6 +331,11 @@ function ShareWindow.CloudSave(type)
 		type = "cloud";
 	end
 
+	if(not loginMain.IsSignedIn()) then
+		_guihelper.MessageBox(L"请登录之后再分享");
+		return;
+	end
+
 	if(type == "cloud") then
 		local template_base_dir = ShareWindow.default_template_dir;
 
@@ -335,6 +343,12 @@ function ShareWindow.CloudSave(type)
 
 		local name   = {};
 		name.utf8    = ShareWindow.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+
+		if(name.utf8 == "")  then
+			_guihelper.MessageBox(L"名字不能为空~");
+			return;
+		end
+
 		name.utf8    = name.utf8:gsub("%s", "");
 		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
@@ -357,7 +371,7 @@ function ShareWindow.CloudSave(type)
 			},
 			form    = params,
 		},function(data, err)
-			echo(data, true);
+			--echo(data, true);
 
 			local numberName = {};
 
@@ -507,8 +521,8 @@ function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSav
 end
 
 function ShareWindow.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
-	echo("filename");
-	echo(filename);
+	--echo("filename");
+	--echo(filename);
 	local blocks = _blocks;
 	local file   = ParaIO.open(filename, "w");
 

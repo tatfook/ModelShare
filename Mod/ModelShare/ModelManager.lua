@@ -115,13 +115,10 @@ function ModelManager.GetTask_DS(index)
 	end
 
     local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
-	
+
     if(not index) then
         return #tasksDS;
     else
-		--echo("taskDS");
-		--echo(tasksDS[index]);
-
         return tasksDS[index];
     end
 end
@@ -151,7 +148,9 @@ function ModelManager.GetTaskInfo()
 
     local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
 
-    return task;
+	if(task) then
+		return task;
+	end
 end
 
 function ModelManager.TaskIsLocked(index)
@@ -179,6 +178,10 @@ function ModelManager.ChangeTheme(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
     index       = tonumber(index);
 
+	if(index == 3 and not loginMain.IsSignedIn()) then
+		_guihelper.MessageBox(L"登陆后才能查看");
+		return;
+	end
    -- ModelBuildQuest.template_theme_index = index;
     --echo(ModelBuildQuest.template_theme_index)
 
@@ -211,8 +214,6 @@ end
 
 function ModelManager.ChangeTask(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
-
-	--echo(index);
 
     ModelBuildQuest.cur_task_index      = tonumber(index);
     ModelBuildQuest.template_task_index = tonumber(index);
@@ -257,7 +258,8 @@ function ModelManager.OnSaveTaskDesc()
     local content = ModelManager.GetPage():GetValue("content", "");
     local desc    = string.gsub(content,"\r\n","<br />");
 
-    --_guihelper.MessageBox(desc);
+	echo(desc, true);
+
     self.ModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
     ModelManager.Refresh();
 end

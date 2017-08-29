@@ -76,7 +76,8 @@
                             模板描述
                         </div>
                         <div style="background-color:white;width:420px;">
-                            <textarea name="templateDesc" style="height:100px;" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>'></textarea>
+                            <textarea name="template_desc" style="height:100px;" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>'>
+                            </textarea>
                         </div>
                         <div style="margin-top:5px;">
                             方块数量：<%= #ShareWindow.blocks %>
@@ -120,13 +121,13 @@
                     </div>
                     <div style="margin-top:15px;margin-left:110px;">
                         <pe:if condition="<%= curShareWindow.BeLocal() %>" >
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.LocalSave">保存</button>
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.LocalSave()">保存</button>
                         </pe:if>
                         <pe:if condition="<%= curShareWindow.BeShare() %>">
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudSave">分享</button>
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudSave()">分享</button>
                         </pe:if>
                         <pe:if condition="<%= curShareWindow.BeBoth() %>">
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudAndLocalSave">保存并分享</button>
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudAndLocalSave()">保存并分享</button>
                         </pe:if>
                         <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="curShareWindow.ClosePage">取消</button>
                     </div>

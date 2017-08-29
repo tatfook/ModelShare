@@ -14,12 +14,15 @@ NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestProvider.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/BlockTemplatePage.lua");
 NPL.load("(gl)Mod/ModelShare/ThemeClass.lua");
 NPL.load("(gl)Mod/ModelShare/TaskClass.lua");
+NPL.load("(gl)Mod/WorldSahre/service/HttpRequest.lua");
 
-local BuildQuest              = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
-local BuildQuestProvider      = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
-local BlockTemplatePage       = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.BlockTemplatePage");
-local ThemeClass              = commonlib.gettable("Mod.ModelShare.ThemeClass");
-local TaskClass               = commonlib.gettable("Mod.ModelShare.TaskClass");
+local BuildQuest          = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
+local BuildQuestProvider  = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
+local BlockTemplatePage   = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.BlockTemplatePage");
+local ThemeClass          = commonlib.gettable("Mod.ModelShare.ThemeClass");
+local TaskClass           = commonlib.gettable("Mod.ModelShare.TaskClass");
+local HttpRequest         = commonlib.gettable("Mod.WorldShare.service.HttpRequest");
+local loginMain           = commonlib.gettable("Mod.WorldShare.login.loginMain");
 
 local ModelBuildQuestProvider = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.BuildQuestProvider"));
 
@@ -255,8 +258,45 @@ function ModelBuildQuestProvider:GetFiles(path, filter, zipfile)
 	return out or {};
 end
 
+function ModelBuildQuestProvider.CloudApi()
+	return loginMain.site .. "/api/mod/modelshare/models/modelshare/";
+end
+
 function ModelBuildQuestProvider:LoadFromCloud()
 	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {order=10, foldername="cloudTemplate", official=false, icon="", unlock_coins="0", name="云模板", image="",};
+
+	local cur_themes  = ModelBuildQuestProvider.themes;
+	local theme_index = #cur_themes + 1; 
+
+	cur_themes[theme_index] = {
+		tasksDS = {},
+	};
+
+	local params = {
+		limit = 100,
+		skip  = 0,
+	};
+
+	if(loginMain.IsSignedIn()) then
+		HttpRequest:GetUrl({
+			url    = self.CloudApi() .. "getList",
+			json   = true,
+			header = {
+				Authorization = "Bearer " .. loginMain.token,
+			},
+			form   = params,
+		},function(data, err)
+			if(not data or not data.error or data.error.id ~= 0 or type(data.data) ~= "table") then
+				return;
+			end
+
+			local cur_tasksDS = cur_themes[theme_index].tasksDS;
+			
+			for key, item in ipairs(data.data) do
+				cur_tasksDS[#cur_tasksDS + 1] = {name = item.templateName};
+			end
+		end)
+	end
 end
 
 function ModelBuildQuestProvider:GetThemes_DS(themeKey)
@@ -276,8 +316,8 @@ function ModelBuildQuestProvider:GetThemes_DS(themeKey)
 end
 
 -- get the tasks information. 
-function ModelBuildQuestProvider:GetTasks_DS(theme_id, category)
-	local theme = self:GetTheme(theme_id, category);
+function ModelBuildQuestProvider:GetTasks_DS(theme_id)
+	local theme = self:GetTheme(theme_id);
 
 	if(not theme) then
 		return;
@@ -298,8 +338,8 @@ function ModelBuildQuestProvider:GetTask(theme_id, task_id)
 	end
 
 	local theme = self:GetTheme(theme_id);
-	
-	if(theme) then
+
+	if(theme and type(theme.GetTask) == "function") then
 		return theme:GetTask(task_id);
 	end
 end
