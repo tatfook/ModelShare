@@ -43,7 +43,7 @@
                     <div>
                         <div class="pull-left" style="width:90px;height:110px;">
                             <pe:if condition="<%= curShareWindow.screenshot()%>">
-                                <img name="CurrentSnapshot" alt="Alternate Text" style="width: 80px;height: 80px;" tooltip='<%=L"点击重新截图"%>' onclick="curShareWindow.OnClickTakeSnapshot"/>
+                                <img name="CurrentSnapshot" style="width: 80px;height: 80px;" tooltip='<%=L"点击重新截图"%>' onclick="curShareWindow.OnClickTakeSnapshot"/>
                             </pe:if>
                             <pe:if condition="<%= not curShareWindow.screenshot()%>">
                                 <div style="width: 80px;height: 80px;background-color:#FFFFFF;textcolor:black;color:black">

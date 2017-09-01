@@ -165,14 +165,18 @@
                     <div style="float:left;margin-left:0px;margin-top:-1px;width:290px;height:2px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 8)" />
                     <div style="margin-left:20px;margin-top:3px;">
                         <pe:if condition="<%= curModelManager.screenshot()%>">
-                            <img src="<%= screenshot()%>" alt="Alternate Text" />
+                            <div style="text-align:center;width: 260px;height: 150px;background-color:#FFFFFF;textcolor:#000000;color:#000000">
+                                <img src="<%= curModelManager.templateImageUrl%>" style="width: 260px;height: 150px;" />
+                            </div>
                         </pe:if>
                         <pe:if condition="<%= not curModelManager.screenshot()%>">
                             <div style="text-align:center;padding-top:60px;width: 260px;height: 150px;background-color:#FFFFFF;textcolor:#000000;color:#000000">
                                 暂无截图
                             </div>
                         </pe:if>
-                        <input type="button" onclick="curModelManager.StartBuild" value='<%=curModelManager.GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-top:-30px;margin-left:110px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" />
+                        <pe:if condition="<%= curModelManager.GetQuestTriggerText() ~= ''>">
+                            <input type="button" onclick="curModelManager.StartBuild" value='<%=curModelManager.GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-top:-30px;margin-left:110px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" />
+                        </pe:if>
                     </div>
                 </div>
             </div>

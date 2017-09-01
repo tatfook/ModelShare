@@ -238,7 +238,7 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 		template_name = nil;
 	end
 
-	if(not template_foldername.default) then
+	if(not template_foldername or not template_foldername.default) then
 		template_foldername = nil;
 	end
 

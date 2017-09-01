@@ -179,7 +179,18 @@ function ModelManager.ChangeTheme(name, mcmlNode)
     index       = tonumber(index);
 
 	if(index == 3 and not loginMain.IsSignedIn()) then
-		_guihelper.MessageBox(L"登陆后才能查看");
+		loginMain.modalCall = function()
+			if(ModelManager.curInstance) then
+				ModelBuildQuest.template_theme_index = 3;
+				ModelBuildQuest.cur_task_index       = 1;
+
+				ModelManager.curInstance.ModelBuildQuestProvider:LoadFromCloud(function()
+					ModelManager.Refresh();
+				end);
+			end
+		end;
+
+		loginMain.showLoginModalImp();
 		return;
 	end
    -- ModelBuildQuest.template_theme_index = index;
@@ -265,7 +276,18 @@ function ModelManager.OnSaveTaskDesc()
 end
 
 function ModelManager.screenshot()
-    return false;
+	local TaskInfo = ModelManager.GetTaskInfo();
+
+	if(ModelManager.curInstance and TaskInfo) then
+		local templateDir  = TaskInfo.dir;
+		local templateSN   = TaskInfo.infoCard.sn; 
+
+		ModelManager.curInstance.templateImageUrl = templateDir .. templateSN .. ".jpg";
+
+		return true;
+	end
+
+	return false;
 end
 
 function ModelManager.GetQuestTriggerText()

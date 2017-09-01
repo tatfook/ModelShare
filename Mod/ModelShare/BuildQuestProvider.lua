@@ -262,22 +262,36 @@ function ModelBuildQuestProvider.CloudApi()
 	return loginMain.site .. "/api/mod/modelshare/models/modelshare/";
 end
 
-function ModelBuildQuestProvider:LoadFromCloud()
-	ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {order=10, foldername="cloudTemplate", official=false, icon="", unlock_coins="0", name="云模板", image="",};
+function ModelBuildQuestProvider:LoadFromCloud(callback)
+	local theme_index;
+	local cur_themes = ModelBuildQuestProvider.themes;
 
-	local cur_themes  = ModelBuildQuestProvider.themes;
-	local theme_index = #cur_themes + 1; 
+	if(not ModelBuildQuestProvider.themesDS[3]) then
+		ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {
+			order        = 10,
+			foldername   = "cloudTemplate",
+			official     = false,
+			icon         = "",
+			unlock_coins = "0",
+			name         = "云模板",
+			image        = "",
+		};
 
-	cur_themes[theme_index] = {
-		tasksDS = {},
-	};
+		theme_index = #cur_themes + 1; 
 
-	local params = {
-		limit = 100,
-		skip  = 0,
-	};
+		cur_themes[theme_index] = {
+			tasksDS = {},
+		};
+	else
+		theme_index = 3;
+	end
 
 	if(loginMain.IsSignedIn()) then
+		local params = {
+			limit = 100,
+			skip  = 0,
+		};
+
 		HttpRequest:GetUrl({
 			url    = self.CloudApi() .. "getList",
 			json   = true,
@@ -300,9 +314,6 @@ function ModelBuildQuestProvider:LoadFromCloud()
 						break;
 					end
 
-					--echo(item.modelsnumber);
-					--echo(Litem.infoCard.sn);
-
 					if(tostring(item.modelsnumber) == tostring(Litem.infoCard.sn)) then
 						status = true;
 						break;
@@ -313,6 +324,10 @@ function ModelBuildQuestProvider:LoadFromCloud()
 					name   = item.templateName,
 					status = status,
 				};
+			end
+
+			if(type(callback) == "function") then
+				callback();
 			end
 
 			echo(cur_tasksDS);
