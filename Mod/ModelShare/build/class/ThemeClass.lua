@@ -6,14 +6,14 @@ Desc:
 use the lib:
 ------------------------------------------------------------
 NPL.load("(gl)Mod/ModelShare/ThemeClass.lua");
-local ThemeClass = commonlib.gettable("Mod.ModelShare.ThemeClass");
+local ThemeClass = commonlib.gettable("Mod.ModelShare.build.class.ThemeClass");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)Mod/ModelShare/TaskClass.lua");
 
-local TaskClass = commonlib.gettable("Mod.ModelShare.TaskClass");
+local TaskClass = commonlib.gettable("Mod.ModelShare.build.class.TaskClass");
 
-local ThemeClass = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ThemeClass"));
+local ThemeClass = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.build.class.ThemeClass"));
 
 function ThemeClass:ctor()
 	self.tasks   = self.tasks   or {};
