@@ -267,7 +267,7 @@ function ModelBuildQuestProvider:LoadFromCloud(callback)
 	local cur_themes = ModelBuildQuestProvider.themes;
 
 	if(not ModelBuildQuestProvider.themesDS[3]) then
-		ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = {
+		local cloudTheme = {
 			order        = 10,
 			foldername   = "cloudTemplate",
 			official     = false,
@@ -277,10 +277,13 @@ function ModelBuildQuestProvider:LoadFromCloud(callback)
 			image        = "",
 		};
 
+		ModelBuildQuestProvider.themesDS[#ModelBuildQuestProvider.themesDS + 1] = cloudTheme;
+
 		theme_index = #cur_themes + 1; 
 
 		cur_themes[theme_index] = {
 			tasksDS = {},
+			
 		};
 	else
 		theme_index = 3;
@@ -293,9 +296,9 @@ function ModelBuildQuestProvider:LoadFromCloud(callback)
 		};
 
 		HttpRequest:GetUrl({
-			url    = self.CloudApi() .. "getList",
-			json   = true,
-			header = {
+			url     = self.CloudApi() .. "getList",
+			json    = true,
+			headers = {
 				Authorization = "Bearer " .. loginMain.token,
 			},
 			form   = params,
@@ -330,7 +333,7 @@ function ModelBuildQuestProvider:LoadFromCloud(callback)
 				callback();
 			end
 
-			echo(cur_tasksDS);
+			--echo(cur_tasksDS);
 		end)
 	end
 end

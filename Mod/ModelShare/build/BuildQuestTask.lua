@@ -30,13 +30,14 @@ local BlockEngine             = commonlib.gettable("MyCompany.Aries.Game.BlockEn
 local ModelBuildQuest = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Task"), commonlib.gettable("Mod.ModelShare.BuildQuest"));
 
 ModelBuildQuest.cur_instance         = nil;
-ModelBuildQuest.cur_task_index       = nil;
-ModelBuildQuest.cur_theme_index      = nil;
+--ModelBuildQuest.cur_task_index       = nil;
+--ModelBuildQuest.cur_theme_index      = nil;
 ModelBuildQuest.template_theme_index = nil;
+ModelBuildQuest.template_task_index  = nil;
 
 function ModelBuildQuest:ctor()
-	ModelBuildQuest.cur_theme_index = self.cur_theme_index or ModelBuildQuest.cur_theme_index or 1;
-	ModelBuildQuest.cur_task_index  = self.cur_task_index  or ModelBuildQuest.cur_task_index  or 1;
+	--ModelBuildQuest.cur_theme_index = self.cur_theme_index or ModelBuildQuest.cur_theme_index or 1;
+	--ModelBuildQuest.cur_task_index  = self.cur_task_index  or ModelBuildQuest.cur_task_index  or 1;
 
 	ModelBuildQuest.template_theme_index = self.template_theme_index or ModelBuildQuest.template_theme_index or 1;
 	ModelBuildQuest.template_task_index  = self.template_task_index  or ModelBuildQuest.template_task_index  or 1;

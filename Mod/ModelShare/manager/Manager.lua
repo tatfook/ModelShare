@@ -13,19 +13,19 @@ NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
 
-local loginMain               = commonlib.gettable("Mod.WorldShare.login.loginMain");
-local ModelBuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest");
-local ModelBuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
-local ShareWindow             = commonlib.gettable("Mod.ModelShare.ShareWindow");
+local loginMain          = commonlib.gettable("Mod.WorldShare.login.loginMain");
+local BuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest");
+local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
+local ShareWindow        = commonlib.gettable("Mod.ModelShare.ShareWindow");
 
 local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ModelManager"));
 
 ModelManager.isEditing = false;
 
 function ModelManager:ctor()
-	ModelBuildQuest:new();
+	BuildQuest:new();
 
-	self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+	self.BuildQuestProvider = BuildQuestProvider:new();
 end
 
 function ModelManager:SetInstance()
@@ -72,8 +72,8 @@ function ModelManager.RefreshList()
 	if(ModelManager.curInstance) then
 		self = ModelManager.curInstance;
 
-		ModelBuildQuest:new();
-		self.ModelBuildQuestProvider = ModelBuildQuestProvider:new();
+		BuildQuest:new();
+		self.BuildQuestProvider = BuildQuestProvider:new();
 
 		self.page:Refresh(0.01);
 	end
@@ -98,7 +98,7 @@ function ModelManager.GetTheme_DS(index)
 		self = ModelManager.curInstance;
 	end
 
-    local themesDS = self.ModelBuildQuestProvider:GetThemes_DS();
+    local themesDS = self.BuildQuestProvider:GetThemes_DS();
 
     if(not index) then
         return #themesDS;
@@ -114,7 +114,7 @@ function ModelManager.GetTask_DS(index)
 		return;
 	end
 
-    local tasksDS = self.ModelBuildQuestProvider:GetTasks_DS(ModelBuildQuest.template_theme_index);
+    local tasksDS = self.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index);
 
     if(not index) then
         return #tasksDS;
@@ -130,8 +130,8 @@ function ModelManager.GetTaskName()
 		return;
 	end
 
-    local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
-	--echo(task, true);
+    local task = self.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+
     if(task) then
         return task.name or "";
     else
@@ -146,7 +146,7 @@ function ModelManager.GetTaskInfo()
 		return;
 	end
 
-    local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+    local task = self.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
 	if(task) then
 		return task;
@@ -154,24 +154,19 @@ function ModelManager.GetTaskInfo()
 end
 
 function ModelManager.TaskIsLocked(index)
-    if(index > ModelBuildQuest.cur_task_index) then
+    if(index > BuildQuest.template_task_index) then
         return true;
     else
         return false;
     end
 end
 
---[[function ModelManager.CreateNewTheme()
-    ModelBuildQuest.new_theme_category_dir = "worlds/DesignHouse/blocktemplates/";
-    ModelBuildQuest:ShowCreateNewThemePage("template");
-end]]
-
 function ModelManager.vip()
 	_guihelper.MessageBox(L"VIP功能正在开发中...");
 end
 
 function ModelManager.GetCurThemeIndex()
-    return ModelBuildQuest.template_theme_index;
+    return BuildQuest.template_theme_index;
 end
 
 function ModelManager.ChangeTheme(name, mcmlNode)
@@ -181,10 +176,10 @@ function ModelManager.ChangeTheme(name, mcmlNode)
 	if(index == 3 and not loginMain.IsSignedIn()) then
 		loginMain.modalCall = function()
 			if(ModelManager.curInstance) then
-				ModelBuildQuest.template_theme_index = 3;
-				ModelBuildQuest.cur_task_index       = 1;
+				BuildQuest.template_theme_index = 3;
+				BuildQuest.template_task_index  = 1;
 
-				ModelManager.curInstance.ModelBuildQuestProvider:LoadFromCloud(function()
+				ModelManager.curInstance.BuildQuestProvider:LoadFromCloud(function()
 					ModelManager.Refresh();
 				end);
 			end
@@ -193,16 +188,11 @@ function ModelManager.ChangeTheme(name, mcmlNode)
 		loginMain.showLoginModalImp();
 		return;
 	end
-   -- ModelBuildQuest.template_theme_index = index;
-    --echo(ModelBuildQuest.template_theme_index)
 
-	ModelBuildQuest:new({
-		cur_theme_index      = index,
+	BuildQuest:new({
 		template_theme_index = index, 
-		cur_task_index       = 1,
+		template_task_index  = 1,
 	});
-
-    --task_index = ModelBuildQuest.cur_task_index;
 	
 	if(ModelManager.curInstance) then
 		ModelManager.curInstance.RestEditing();
@@ -216,7 +206,7 @@ function ModelManager.RestEditing()
 end
 
 function ModelManager.TaskIsSelected(index)
-    if(ModelBuildQuest.cur_task_index == index) then
+    if(BuildQuest.template_task_index == index) then
         return true;
     else
         return false;
@@ -226,8 +216,7 @@ end
 function ModelManager.ChangeTask(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
 
-    ModelBuildQuest.cur_task_index      = tonumber(index);
-    ModelBuildQuest.template_task_index = tonumber(index);
+    BuildQuest.template_task_index = tonumber(index);
 
 	if(ModelManager.curInstance) then
 		ModelManager.curInstance.RestEditing();
@@ -244,7 +233,7 @@ function ModelManager.CanEditing()
 	end
 
 	if(ModelManager.curInstance) then
-		curTheme = ModelManager.curInstance.GetTheme_DS(ModelBuildQuest.template_theme_index);
+		curTheme = ModelManager.curInstance.GetTheme_DS(BuildQuest.template_theme_index);
 	end
 	--echo(curTheme);
     if(curTheme) then
@@ -271,14 +260,14 @@ function ModelManager.OnSaveTaskDesc()
 
 	--echo(desc, true);
 
-    self.ModelBuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
+    self.BuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
     ModelManager.Refresh();
 end
 
 function ModelManager.screenshot()
 	local TaskInfo = ModelManager.GetTaskInfo();
 
-	if(ModelManager.curInstance and TaskInfo) then
+	if(ModelManager.curInstance and TaskInfo and TaskInfo.infoCard) then
 		local templateDir  = TaskInfo.dir;
 		local templateSN   = TaskInfo.infoCard.sn; 
 
@@ -292,12 +281,12 @@ end
 
 function ModelManager.GetQuestTriggerText()
     local s        = "";
-    local cur_task = ModelBuildQuest:GetCurrentQuest();
+    local cur_task = BuildQuest:GetCurrentQuest();
 
-    if(ModelBuildQuest:IsTaskUnderway() and cur_task and cur_task.theme_id == ModelBuildQuest.template_theme_index) then
+    if(BuildQuest:IsTaskUnderway() and cur_task and cur_task.theme_id == BuildQuest.template_theme_index) then
         s = L"放弃建造";
     else
-        local task = self.ModelBuildQuestProvider:GetTask(ModelBuildQuest.template_theme_index, ModelBuildQuest.cur_task_index);
+        local task = self.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
 		if(task == nil) then
 			return "";
@@ -314,23 +303,20 @@ function ModelManager.GetQuestTriggerText()
 end
 
 function ModelManager.StartBuild()
-	--echo(ModelBuildQuest.cur_theme_index);
-	--echo(ModelBuildQuest.cur_task_index);
+	if(BuildQuest.cur_theme_index == 1) then
+		local cur_task = BuildQuest:GetCurrentQuest();
 
-	if(ModelBuildQuest.cur_theme_index == 1) then
-		local cur_task = ModelBuildQuest:GetCurrentQuest();
-
-		if(ModelBuildQuest:IsTaskUnderway() and cur_task.theme_id == ModelBuildQuest.cur_theme_index) then
-			ModelBuildQuest:EndEditing();
+		if(BuildQuest:IsTaskUnderway() and cur_task.theme_id == BuildQuest.cur_theme_index) then
+			BuildQuest:EndEditing();
 			return;
 		end
 
 		local UseAbsolutePos  = mouse_button == "right";
 		local ClickOnceDeploy = UseAbsolutePos;
 
-		local task = ModelBuildQuest:new({
-						theme_id = ModelBuildQuest.cur_theme_index, 
-						task_id  = ModelBuildQuest.cur_task_index, 
+		local task = BuildQuest:new({
+						theme_id = BuildQuest.cur_theme_index, 
+						task_id  = BuildQuest.template_task_index, 
 						step_id  = 1,
 						UseAbsolutePos  = UseAbsolutePos,
 						ClickOnceDeploy = ClickOnceDeploy});
@@ -338,10 +324,10 @@ function ModelManager.StartBuild()
 		--echo(task, true);
 
 		task:Run();
-	elseif(ModelBuildQuest.cur_theme_index == 2) then
-		local curTheme = ModelBuildQuestProvider.themes[ModelBuildQuest.cur_theme_index];
+	elseif(BuildQuest.cur_theme_index == 2) then
+		local curTheme = BuildQuestProvider.themes[BuildQuest.cur_theme_index];
 
-		ModelBuildQuest.CreateFromTemplate(curTheme.tasks[ModelBuildQuest.cur_task_index].filename);
+		BuildQuest.CreateFromTemplate(curTheme.tasks[BuildQuest.template_task_index].filename);
 	end
 
     ModelManager.ClosePage();
@@ -350,11 +336,20 @@ end
 function ModelManager.DeleteTemplate()
 	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
 		if(res and res == _guihelper.DialogResult.Yes) then
-			local curTheme = ModelBuildQuestProvider.themes[ModelBuildQuest.cur_theme_index];
-			local curTask  = curTheme.tasks[ModelBuildQuest.cur_task_index];
 
-			if(ModelBuildQuest.cur_task_index == #curTheme.tasks) then
-				ModelBuildQuest.cur_task_index = ModelBuildQuest.cur_task_index - 1;
+			local curTheme = BuildQuestProvider.themes[BuildQuest.template_theme_index];
+			echo(curTheme);
+
+			local curTask  = BuildQuestProvider.tasksDS[BuildQuest.template_task_index];
+
+			if(BuildQuest.template_task_index ~= 1 and BuildQuest.template_task_index == #curTheme.tasks) then
+				BuildQuest.template_task_index = BuildQuest.template_task_index - 1;
+			end
+
+			echo(curTask);
+
+			if(true) then
+				return;
 			end
 
 			if (curTheme.themeKey == "globalTemplate") then
@@ -371,6 +366,8 @@ function ModelManager.DeleteTemplate()
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
+			elseif(curTheme.themeKey == "cloudTemplate") then
+				_guihelper.MessageBox("OKOKOK");
 			end
 		end
 	end, _guihelper.MessageBoxButtons.YesNo);
