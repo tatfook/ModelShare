@@ -5,8 +5,8 @@ Date: 2017.6
 Desc: 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
-local ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
+NPL.load("(gl)Mod/ModelShare/share/TemplateShare.lua");
+local TemplateShare = commonlib.gettable("Mod.ModelShare.TemplateShare");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/kids/3DMapSystemUI/ScreenShot/SnapshotPage.lua");
@@ -24,43 +24,42 @@ local SyncMain        = commonlib.gettable("Mod.WorldShare.sync.SyncMain");
 local LocalService    = commonlib.gettable("Mod.WorldShare.service.LocalService");
 local HttpRequest     = commonlib.gettable("Mod.WorldShare.service.HttpRequest");
 
-local ShareWindow = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ShareWindow"));
+local TemplateShare = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.share.TemplateShare"));
 
 -- max number blocks in a template. 
-ShareWindow.max_blocks_per_template = 5000000;
-ShareWindow.SnapShotPath            = "Screen Shots/block_template.jpg";
-ShareWindow.global_template_dir     = "worlds/DesignHouse/blocktemplates/"
-ShareWindow.default_template_dir    = "worlds/DesignHouse/blocktemplates/";
+TemplateShare.max_blocks_per_template = 5000000;
+TemplateShare.SnapShotPath          = "Screen Shots/block_template.jpg";
+TemplateShare.global_template_dir     = "worlds/DesignHouse/blocktemplates/"
 
-function ShareWindow:ctor()
-	ShareWindow.template_label = {};
-	ShareWindow.savePath       = "world";
+function TemplateShare:ctor()
+	TemplateShare.template_label = {};
+	TemplateShare.savePath       = "world";
 end
 
-function ShareWindow:init()
+function TemplateShare:init()
 end
 
-function ShareWindow:ShowPage()
-	if(ShareWindow.curInstance) then
+function TemplateShare:ShowPage()
+	if(TemplateShare.curInstance) then
 		local selectBlocksInstance = SelectBlocks.GetCurrentInstance();
 
 		local pivot_x, pivot_y, pivot_z = selectBlocksInstance:GetSelectionPivot();
 
 		if(selectBlocksInstance.UsePlayerPivotY) then
 			local x,y,z    = ParaScene.GetPlayer():GetPosition();
-			local _, by, _ = BlockEngine:block(0, y+0.1, 0);
+			local _, by, _ = BlockEngine:block(0, y + 0.1, 0);
 
 			pivot_y = by;
 		end
 
-		ShareWindow.pivot  = {pivot_x, pivot_y, pivot_z};
-		ShareWindow.blocks = selectBlocksInstance:GetCopyOfBlocks(pivot);
+		TemplateShare.pivot  = {pivot_x, pivot_y, pivot_z};
+		TemplateShare.blocks = selectBlocksInstance:GetCopyOfBlocks(pivot);
 
-		--echo(ShareWindow.pivot);
+		--echo(TemplateShare.pivot);
 
 		System.App.Commands.Call("File.MCMLWindowFrame", {
-			url  = "Mod/ModelShare/ShareWindow.html", 
-			name = "ShareWindow",
+			url  = "Mod/ModelShare/sahre/TemplateShare.html", 
+			name = "TemplateShare",
 			isShowTitleBar = false,
 			DestroyOnClose = true, -- prevent many ViewProfile pages staying in memory / false will only hide window
 			style = CommonCtrl.WindowFrame.ContainerStyle,
@@ -78,10 +77,10 @@ function ShareWindow:ShowPage()
 	end
 end
 
-function ShareWindow:FolderToCloud()
+function TemplateShare:ManagerToCloud()
 	System.App.Commands.Call("File.MCMLWindowFrame", {
-		url  = "Mod/ModelShare/ShareWindow.html", 
-		name = "ShareWindow",
+		url  = "Mod/ModelShare/share/TemplateShare.html", 
+		name = "TemplateShare",
 		isShowTitleBar = false,
 		DestroyOnClose = true, -- prevent many ViewProfile pages staying in memory / false will only hide window
 		style = CommonCtrl.WindowFrame.ContainerStyle,
@@ -98,76 +97,76 @@ function ShareWindow:FolderToCloud()
 	});
 end
 
-function ShareWindow:SetInstance()
-	ShareWindow.curInstance = self;
+function TemplateShare:SetInstance()
+	TemplateShare.curInstance = self;
 end
 
-function ShareWindow:SetPage()
+function TemplateShare:SetPage()
 	self.page = document.GetPageCtrl();
 end
 
-function ShareWindow.GetPage()
-	if(not ShareWindow.curInstance.page) then
+function TemplateShare.GetPage()
+	if(not TemplateShare.curInstance.page) then
 		return;
 	end
 
-	return ShareWindow.curInstance.page;
+	return TemplateShare.curInstance.page;
 end
 
-function ShareWindow:PageRefresh(sec)
+function TemplateShare:PageRefresh(sec)
 	local templateName = self.page:GetValue("templateName");
 	self.page:SetNodeValue("templateName", templateName);
 
 	self.page:Refresh(sec or 0.01);
 end
 
-function ShareWindow.Refresh(sec)
-	if(ShareWindow.curInstance) then
-		ShareWindow.curInstance:PageRefresh(sec);
+function TemplateShare.Refresh(sec)
+	if(TemplateShare.curInstance) then
+		TemplateShare.curInstance:PageRefresh(sec);
 	end
 end
 
-function ShareWindow.login()
+function TemplateShare.login()
 	loginMain.modalCall = function()
-		if(ShareWindow.curInstance) then
-			ShareWindow.curInstance:PageRefresh();
+		if(TemplateShare.curInstance) then
+			TemplateShare.curInstance:PageRefresh();
 		end
 	end;
 
 	loginMain.showLoginModalImp();
 end
 
-function ShareWindow:OnClose()
+function TemplateShare:OnClose()
 	if(self.page) then
 		self.page:CloseWindow();
 	end
 
-	ShareWindow.curInstance = nil; --destory instance
+	TemplateShare.curInstance = nil; --destory instance
 end
 
-function ShareWindow.isSignedIn()
+function TemplateShare.isSignedIn()
     return loginMain.IsSignedIn();
 end
 
-function ShareWindow.register()
+function TemplateShare.register()
     ParaGlobal.ShellExecute("open", loginMain.site .. "/wiki/home", "", "", 1);
 end
 
-function ShareWindow.screenshot()
-    if(ShareWindow.curInstance.SnapShotPath) then
-        ShareWindow.curInstance.page:SetUIValue("CurrentSnapshot", ShareWindow.SnapShotPath);
+function TemplateShare.screenshot()
+    if(TemplateShare.curInstance.SnapShotPath) then
+        TemplateShare.curInstance.page:SetUIValue("CurrentSnapshot", TemplateShare.SnapShotPath);
 		return true;
     else
         return false;
     end
 end
 
-function ShareWindow.OnClickTakeSnapshot()
-	if(MyCompany.Apps.ScreenShot.SnapshotPage.TakeSnapshot(ShareWindow.SnapShotPath, 80, 80, false, false)) then
+function TemplateShare.OnClickTakeSnapshot()
+	if(MyCompany.Apps.ScreenShot.SnapshotPage.TakeSnapshot(TemplateShare.SnapShotPath, 80, 80, false, false)) then
 		-- refresh image
-		ParaAsset.LoadTexture("", ShareWindow.SnapShotPath,1):UnloadAsset();
-		--echo(ShareWindow.SnapShotPath);
-		ShareWindow.Refresh();
+		ParaAsset.LoadTexture("", TemplateShare.SnapShotPath,1):UnloadAsset();
+		--echo(TemplateShare.SnapShotPath);
+		TemplateShare.Refresh();
 	else
 		_guihelper.MessageBox(L"截图失败了, 请确定您有权限读写磁盘")
 	end
@@ -175,48 +174,48 @@ function ShareWindow.OnClickTakeSnapshot()
 
 end
 
-function ShareWindow.ClosePage()
-	if(ShareWindow.curInstance) then
-		ShareWindow.curInstance:OnClose();
+function TemplateShare.ClosePage()
+	if(TemplateShare.curInstance) then
+		TemplateShare.curInstance:OnClose();
 	end
 end
 
-function ShareWindow.SetSavePath()
-	local page = ShareWindow.curInstance.page;
+function TemplateShare.SetSavePath()
+	local page = TemplateShare.curInstance.page;
 
 	if(page) then
-		ShareWindow.savePath = page:GetValue("savePath");
+		TemplateShare.savePath = page:GetValue("savePath");
 
-		ShareWindow.Refresh();
+		TemplateShare.Refresh();
 	end
 end
 
-function ShareWindow.BeLocal()
-	local savePath = ShareWindow.savePath;
+function TemplateShare.BeLocal()
+	local savePath = TemplateShare.savePath;
 
 	if(savePath == "world" or savePath == "global") then
 		return true;
 	end
 end
 
-function ShareWindow.BeShare()
-	local savePath = ShareWindow.savePath;
+function TemplateShare.BeShare()
+	local savePath = TemplateShare.savePath;
 
 	if(savePath == "cloud") then
 		return true;
 	end
 end
 
-function ShareWindow.BeBoth()
-	local savePath = ShareWindow.savePath;
+function TemplateShare.BeBoth()
+	local savePath = TemplateShare.savePath;
 
 	if(savePath =="cloudAndWorld" or savePath == "cloudAndGlobal") then
 		return true;
 	end
 end
 
-function ShareWindow.IsShareButton()
-	local savePath = ShareWindow.savePath;
+function TemplateShare.IsShareButton()
+	local savePath = TemplateShare.savePath;
 
 	if(savePath == "world" or savePath == "global") then
 		return true;
@@ -227,8 +226,8 @@ function ShareWindow.IsShareButton()
 	end
 end
 
-function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
-	local page = ShareWindow.GetPage();
+function TemplateShare.LocalSave(template_dir, template_name, template_foldername)
+	local page = TemplateShare.GetPage();
 
 	local bSaveSnapshot;
 	local isThemedTemplate;
@@ -242,7 +241,7 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 		template_foldername = nil;
 	end
 
-	local template_base_dir = ShareWindow.default_template_dir;--ShareWindow.template_save_dir or ShareWindow.default_template_dir;
+	local template_base_dir = TemplateShare.global_template_dir;--TemplateShare.template_save_dir or TemplateShare.global_template_dir;
 
 	if(not template_dir) then
 		template_dir = page:GetValue("savePath");
@@ -301,9 +300,9 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 		local bx, by, bz = BlockEngine:block(x, y, z)
 		local player_pos = string.format("%d,%d,%d", bx, by, bz);
 
-		local pivot = string.format("%d,%d,%d", ShareWindow.pivot[1], ShareWindow.pivot[2], ShareWindow.pivot[3]);
+		local pivot = string.format("%d,%d,%d", TemplateShare.pivot[1], TemplateShare.pivot[2], TemplateShare.pivot[3]);
 
-		ShareWindow.SaveToTemplate(filename, ShareWindow.blocks, {
+		TemplateShare.SaveToTemplate(filename, TemplateShare.blocks, {
 			name            = template_name.utf8,
 			desc            = desc,
 			author_nid      = System.User.nid,
@@ -321,7 +320,7 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 					imageFileName = format("%s%s.jpg", GameLogic.current_worlddir .. "blocktemplates/", template_name.default);
 				end
 				
-				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
+				ParaIO.CopyFile(TemplateShare.SnapShotPath, imageFileName, true);
 			elseif(isThemedTemplate) then
 				local imageFileName;
 
@@ -331,8 +330,8 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 					imageFileName = format("%s%s.jpg", template_base_dir .. template_name.default .. "/", template_name.default);
 				end
 				
-				ParaIO.CopyFile(ShareWindow.SnapShotPath, imageFileName, true);
-				ShareWindow.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), template_name.utf8, ShareWindow.blocks, desc);
+				ParaIO.CopyFile(TemplateShare.SnapShotPath, imageFileName, true);
+				TemplateShare.CreateBuildingTaskFile(taskfilename, commonlib.Encoding.DefaultToUtf8(filename), template_name.utf8, TemplateShare.blocks, desc);
 			end
 		end, bSaveSnapshot);
 	end
@@ -348,11 +347,11 @@ function ShareWindow.LocalSave(template_dir, template_name, template_foldername)
 	end
 end
 
-function ShareWindow.CloudApi()
+function TemplateShare.CloudApi()
 	return loginMain.site .. "/api/mod/modelshare/models/modelshare/";
 end
 
-function ShareWindow.CloudSave(type)
+function TemplateShare.CloudSave(type)
 	if(not type) then
 		type = "cloud";
 	end
@@ -363,12 +362,12 @@ function ShareWindow.CloudSave(type)
 	end
 
 	if(type == "cloud") then
-		local template_base_dir = ShareWindow.default_template_dir;
+		local template_base_dir = TemplateShare.global_template_dir;
 
-		local isShare  = ShareWindow.GetPage():GetValue("isShare");
+		local isShare  = TemplateShare.GetPage():GetValue("isShare");
 
 		local name   = {};
-		name.utf8    = ShareWindow.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		name.utf8    = TemplateShare.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
 
 		if(name.utf8 == "")  then
 			_guihelper.MessageBox(L"名字不能为空~");
@@ -378,7 +377,7 @@ function ShareWindow.CloudSave(type)
 		name.utf8    = name.utf8:gsub("%s", "");
 		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
-		local desc = ShareWindow.GetPage():GetValue("templateDesc");
+		local desc = TemplateShare.GetPage():GetValue("templateDesc");
 
 		if(desc) then
 			desc = string.gsub(desc,"\r?\n","<br/>");
@@ -388,14 +387,14 @@ function ShareWindow.CloudSave(type)
 
 		local params = {
 			templateName = name.utf8,
-			blocks       = #ShareWindow.blocks,
+			blocks       = #TemplateShare.blocks,
 			volume       = 0,
 			isShare      = isShare and 1 or 0,
 			desc         = desc,
 		};
 
 		HttpRequest:GetUrl({
-			url     = ShareWindow.CloudApi() .. "add",
+			url     = TemplateShare.CloudApi() .. "add",
 			json    = true,
 			headers = {
 				Authorization = "Bearer " .. loginMain.token,
@@ -413,7 +412,7 @@ function ShareWindow.CloudSave(type)
 			local infoCard = format("%s%s.info.xml", template_base_dir .. numberName.default .. "/", numberName.default);
 
 			if(not ParaIO.DoesFileExist(filename)) then
-				ShareWindow.LocalSave("global", name, numberName);
+				TemplateShare.LocalSave("global", name, numberName);
 
 				local templateInfo = {
 					{tostring(data.data.templateName), name = "templateName"},
@@ -467,27 +466,27 @@ function ShareWindow.CloudSave(type)
 	end
 end
 
-function ShareWindow.CloudAndLocalSave()
-	local savePath = ShareWindow.GetPage():GetValue("savePath");
+function TemplateShare.CloudAndLocalSave()
+	local savePath = TemplateShare.GetPage():GetValue("savePath");
 	--echo(savePath);
 	if(savePath == "cloudAndWorld") then
-		ShareWindow.LocalSave("world");
-		ShareWindow.CloudSave("world")
+		TemplateShare.LocalSave("world");
+		TemplateShare.CloudSave("world")
 	elseif(savePath == "cloudAndGlobal") then
-		ShareWindow.LocalSave("global");
-		ShareWindow.CloudSave("cloud");
+		TemplateShare.LocalSave("global");
+		TemplateShare.CloudSave("cloud");
 	end
 end
 
-function ShareWindow.RefreshTemplateLabel()
-	ShareWindow.GetTemplateLabel();
-	ShareWindow.Refresh(3);
+function TemplateShare.RefreshTemplateLabel()
+	TemplateShare.GetTemplateLabel();
+	TemplateShare.Refresh(3);
 end
 
-function ShareWindow.GetTemplateLabel()
-	local templateLabel = ShareWindow.GetPage():GetValue("templateLabel");
+function TemplateShare.GetTemplateLabel()
+	local templateLabel = TemplateShare.GetPage():GetValue("templateLabel");
 
-	ShareWindow.GetPage():SetNodeValue("templateLabel", templateLabel);
+	TemplateShare.GetPage():SetNodeValue("templateLabel", templateLabel);
 
 	local templateLabelTabel = {};
 
@@ -497,12 +496,12 @@ function ShareWindow.GetTemplateLabel()
 		};
 	end
 
-	ShareWindow.template_label = templateLabelTabel;
+	TemplateShare.template_label = templateLabelTabel;
 
-	return ShareWindow.template_label;
+	return TemplateShare.template_label;
 end
 
-function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSaveSnapshot)
+function TemplateShare.SaveToTemplate(filename, blocks, params, callbackFunc, bSaveSnapshot)
 	if( not GameLogic.IsOwner()) then
 		--_guihelper.MessageBox(format("只有世界的作者, 才能保存模板. 请尊重别人的创意,不要盗版!", tostring(WorldCommon.GetWorldTag("nid"))));
 		--return;
@@ -514,8 +513,8 @@ function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSav
 		return;
 	end
 
-	if(#blocks > ShareWindow.max_blocks_per_template) then
-		_guihelper.MessageBox(format(L"模板最多能保存%d块", ShareWindow.max_blocks_per_template))
+	if(#blocks > TemplateShare.max_blocks_per_template) then
+		_guihelper.MessageBox(format(L"模板最多能保存%d块", TemplateShare.max_blocks_per_template))
 		return;
 	end
 
@@ -537,21 +536,21 @@ function ShareWindow.SaveToTemplate(filename, blocks, params, callbackFunc, bSav
 			shadow=true,
 		});
 		
-		ShareWindow.ClosePage();
+		TemplateShare.ClosePage();
 
 		if(type(callbackFunc) == "function") then
 			callbackFunc();
 		end
 
 		if(bSaveSnapshot) then
-			ParaIO.CopyFile(ShareWindow.SnapShotPath, filename:gsub("xml$", "jpg"), true);
+			ParaIO.CopyFile(TemplateShare.SnapShotPath, filename:gsub("xml$", "jpg"), true);
 		end
 
 		_guihelper.MessageBox(L"保存成功！ 您可以从【建造】->【模板】中创建这个模板的实例了～");
 	end
 end
 
-function ShareWindow.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
+function TemplateShare.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
 	--echo("filename");
 	--echo(filename);
 	local blocks = _blocks;

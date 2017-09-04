@@ -5,11 +5,11 @@ Date: 2017.8
 Desc:
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)Mod/ModelShare/ThemeClass.lua");
+NPL.load("(gl)Mod/ModelShare/build/class/ThemeClass.lua");
 local ThemeClass = commonlib.gettable("Mod.ModelShare.build.class.ThemeClass");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/ModelShare/TaskClass.lua");
+NPL.load("(gl)Mod/ModelShare/build/class/TaskClass.lua");
 
 local TaskClass = commonlib.gettable("Mod.ModelShare.build.class.TaskClass");
 

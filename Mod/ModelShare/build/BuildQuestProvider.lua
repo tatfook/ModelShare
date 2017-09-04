@@ -5,22 +5,22 @@ Date: 2017.8
 Desc: BuildQuestProvider for modelshare mod
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
+NPL.load("(gl)Mod/ModelShare/build/BuildQuestProvider.lua");
 local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.build.BuildQuestProvider");
 ------------------------------------------------------------
 ]]
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestTask.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestProvider.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Areas/BlockTemplatePage.lua");
-NPL.load("(gl)Mod/ModelShare/ThemeClass.lua");
-NPL.load("(gl)Mod/ModelShare/TaskClass.lua");
+NPL.load("(gl)Mod/ModelShare/build/class/ThemeClass.lua");
+NPL.load("(gl)Mod/ModelShare/build/class/TaskClass.lua");
 NPL.load("(gl)Mod/WorldSahre/service/HttpRequest.lua");
 
 local BuildQuestMain          = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuest");
 local BuildQuestProviderMain  = commonlib.gettable("MyCompany.Aries.Game.Tasks.BuildQuestProvider");
 local BlockTemplatePageMain   = commonlib.gettable("MyCompany.Aries.Creator.Game.Desktop.BlockTemplatePage");
-local ThemeClass              = commonlib.gettable("Mod.ModelShare.ThemeClass");
-local TaskClass               = commonlib.gettable("Mod.ModelShare.TaskClass");
+local ThemeClass              = commonlib.gettable("Mod.ModelShare.build.class.ThemeClass");
+local TaskClass               = commonlib.gettable("Mod.ModelShare.build.class.TaskClass");
 local HttpRequest             = commonlib.gettable("Mod.WorldShare.service.HttpRequest");
 local loginMain               = commonlib.gettable("Mod.WorldShare.login.loginMain");
 
@@ -51,15 +51,15 @@ function BuildQuestProvider:ctor()
 	self:LoadFromLocal();
 	self:LoadFromCloud();
 
-	for key, value in ipairs(categoryDS["globalTemplate"]) do
+	for key, value in ipairs(BuildQuestProvider.categoryDS["globalTemplate"]) do
 
 	end
 
-	for key, value in ipairs(categoryDS["globalTemplate"]) do
+	for key, value in ipairs(BuildQuestProvider.categoryDS["globalTemplate"]) do
 
 	end
 
-	for key, value in ipairs(categoryDS["cloudTemplate"]) do
+	for key, value in ipairs(BuildQuestProvider.categoryDS["cloudTemplate"]) do
 
 	end
 

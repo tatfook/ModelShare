@@ -40,20 +40,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Mod\ModelShare\ModelManager.html" />
-    <Content Include="Mod\ModelShare\ShareWindow.html" />
+    <Content Include="Mod\ModelShare\manager\Manager.html" />
+    <Content Include="Mod\ModelShare\share\TemplateShare.html" />
     <Content Include="script/**" />
     <Content Include="Mod/ModelShare\main.lua" />
   </ItemGroup>
   <ItemGroup>
     <None Include="InstallPackages.bat" />
-    <None Include="Mod\ModelShare\BuildQuestProvider.lua" />
-    <None Include="Mod\ModelShare\BuildQuestTask.lua" />
-    <None Include="Mod\ModelShare\ModelManager.lua" />
-    <None Include="Mod\ModelShare\ShareWindow.lua" />
-    <None Include="Mod\ModelShare\StepClass.lua" />
-    <None Include="Mod\ModelShare\TaskClass.lua" />
-    <None Include="Mod\ModelShare\ThemeClass.lua" />
+    <None Include="Mod\ModelShare\build\BuildQuestProvider.lua" />
+    <None Include="Mod\ModelShare\build\BuildQuestTask.lua" />
+    <None Include="Mod\ModelShare\build\class\StepClass.lua" />
+    <None Include="Mod\ModelShare\build\class\TaskClass.lua" />
+    <None Include="Mod\ModelShare\build\class\ThemeClass.lua" />
+    <None Include="Mod\ModelShare\manager\Manager.lua" />
+    <None Include="Mod\ModelShare\share\TemplateShare.lua" />
     <None Include="README.md" />
     <None Include="Run.bat" />
   </ItemGroup>

@@ -9,8 +9,6 @@ NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
 local BuildQuest = commonlib.gettable("Mod.ModelShare.BuildQuest");
 ------------------------------------------------------------
 ]]
---NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestTask.lua");
---NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/API/UserProfile.lua");
 NPL.load("(gl)script/apps/Aries/Creator/Game/Tasks/HelpPage.lua");
@@ -30,15 +28,10 @@ local BlockEngine             = commonlib.gettable("MyCompany.Aries.Game.BlockEn
 local BuildQuest = commonlib.inherit(commonlib.gettable("MyCompany.Aries.Game.Task"), commonlib.gettable("Mod.ModelShare.build.BuildQuest"));
 
 BuildQuest.cur_instance         = nil;
---BuildQuest.cur_task_index       = nil;
---BuildQuest.cur_theme_index      = nil;
 BuildQuest.template_theme_index = nil;
 BuildQuest.template_task_index  = nil;
 
 function BuildQuest:ctor()
-	--BuildQuest.cur_theme_index = self.cur_theme_index or BuildQuest.cur_theme_index or 1;
-	--BuildQuest.cur_task_index  = self.cur_task_index  or BuildQuest.cur_task_index  or 1;
-
 	BuildQuest.template_theme_index = self.template_theme_index or BuildQuest.template_theme_index or 1;
 	BuildQuest.template_task_index  = self.template_task_index  or BuildQuest.template_task_index  or 1;
 end
@@ -68,7 +61,7 @@ function BuildQuest:ShowCreateNewThemePage(themeKey, callbcak)
 			y = -130/2,
 			width = 320,
 			height = 130,
-	});	
+	});
 end
 
 function BuildQuest:IsTaskUnderway()
