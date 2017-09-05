@@ -32,10 +32,13 @@ BuildQuestProvider.categoryPaths = {
 
 BuildQuestProvider.categoryDS = {
 	["globalTemplate"] = {
-		themesDS = {}, themes={}, themesType = {}, beOfficial = false,
+		themesDS = {}, themes = {}, themesType = {}, beOfficial = false,
 	},
 	["worldTemplate"] = {
-		themesDS = {}, themes={}, themesType = {}, beOfficial = false;
+		themesDS = {}, themes = {}, themesType = {}, beOfficial = false;
+	},
+	["cloudTemplate"] = {
+		themesDS = {}, themes = {}, themesType = {}, beOfficial = false;
 	}
 };
 
@@ -43,27 +46,27 @@ BuildQuestProvider.themesDS = {};
 BuildQuestProvider.themes   = {};
 
 function BuildQuestProvider:ctor()
-	BuildQuestProvider.themes           = {};
-	BuildQuestProvider.themesDS         = {};
+	BuildQuestProvider.themes   = {};
+	BuildQuestProvider.themesDS = {};
 
 	BuildQuestProvider.categoryPaths['worldTemplate'] = GameLogic.GetWorldDirectory():gsub("\\","/") .. "blocktemplates/";
 
 	self:LoadFromLocal();
 	self:LoadFromCloud();
 
-	echo(BuildQuestProvider.categoryDS, true);
+	BuildQuestProvider.themesDS[#BuildQuestProvider.themesDS + 1]  = BuildQuestProvider.categoryDS["globalTemplate"].themesDS;
+	BuildQuestProvider.themesDS[#BuildQuestProvider.themesDS + 1]  = BuildQuestProvider.categoryDS["worldTemplate"].themesDS;
+	BuildQuestProvider.themesDS[#BuildQuestProvider.themesDS + 1]  = BuildQuestProvider.categoryDS["cloudTemplate"].themesDS;
 
-	for key, value in ipairs(BuildQuestProvider.categoryDS["globalTemplate"]) do
+	BuildQuestProvider.themes[#BuildQuestProvider.themes + 1]  = BuildQuestProvider.categoryDS["globalTemplate"].themes;
+	BuildQuestProvider.themes[#BuildQuestProvider.themes + 1]  = BuildQuestProvider.categoryDS["worldTemplate"].themes;
+	BuildQuestProvider.themes[#BuildQuestProvider.themes + 1]  = BuildQuestProvider.categoryDS["cloudTemplate"].themes;
 
+	for i=1, #BuildQuestProvider.themes do
+		BuildQuestProvider.themes[i].id = i;
 	end
 
-	for key, value in ipairs(BuildQuestProvider.categoryDS["globalTemplate"]) do
-
-	end
-
-	for key, value in ipairs(BuildQuestProvider.categoryDS["cloudTemplate"]) do
-
-	end
+	--echo(BuildQuestProvider.themes, true);
 
 	BuildQuestProvider.themesDS[#BuildQuestProvider.themesDS + 1] = {name = "empty", official = false};
 end
@@ -109,7 +112,7 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		theme_ds_name = "本存档模板";
 	end
 
-	cur_themesDS = {
+	commonlib.partialcopy(cur_themesDS, {
 		name         = theme_ds_name,
 		foldername   = themeKey,
 		order        = 10,
@@ -117,8 +120,8 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		image        = "",
 		icon         = "",
 		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
-	};
-	
+	});
+
 	local theme_index = #cur_themes + 1;
 
 	cur_themes[theme_index] = ThemeClass:new({
@@ -225,10 +228,6 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 			end
 		end
 	end
-
-	for i=1, #cur_themes do
-		cur_themes[i].id = i;
-	end
 end
 
 function BuildQuestProvider:GetFiles(path, filter, zipfile)
@@ -277,7 +276,7 @@ function BuildQuestProvider:LoadFromCloud(callback)
 	local cur_themesDS   = BuildQuestProvider.categoryDS['cloudTemplate']['themesDS'];
 	local cur_themesType = BuildQuestProvider.categoryDS['cloudTemplate']['themesType'];
 
-	local cur_themesDS = {
+	commonlib.partialcopy(cur_themesDS, {
 		order        = 10,
 		foldername   = "cloudTemplate",
 		official     = false,
@@ -285,7 +284,7 @@ function BuildQuestProvider:LoadFromCloud(callback)
 		unlock_coins = "0",
 		name         = "云模板",
 		image        = "",
-	};
+	});
 
 	theme_index = #cur_themes + 1; 
 
@@ -295,7 +294,7 @@ function BuildQuestProvider:LoadFromCloud(callback)
 		unlock_coins = "0",
 		image        = "",
 		icon         = "",
-		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
+		official     = BuildQuestProvider.categoryDS['cloudTemplate']["beOfficial"],
 		themeKey     = themeKey
 	});
 
@@ -348,36 +347,26 @@ function BuildQuestProvider:LoadFromCloud(callback)
 	end
 end
 
-function BuildQuestProvider:GetThemes_DS(themeKey)
+function BuildQuestProvider:GetThemes_DS()
 	if(not next(BuildQuestProvider.themesDS)) then
 		return {};
 	end
 
-	local ds;
-
-	if(themeKey) then
-		ds = BuildQuestProvider.categoryDS[themeKey]["themesDS"]
-	else
-		ds = BuildQuestProvider.themesDS;
-	end
-
-	return ds;
+	return BuildQuestProvider.themesDS;
 end
 
 -- get the tasks information. 
 function BuildQuestProvider:GetTasks_DS(theme_id)
-	local theme = self:GetTheme(theme_id);
-
-	if(not theme) then
-		return;
+	if(not next(BuildQuestProvider.themes)) then
+		return {};
 	end
 
-	return theme.tasksDS;
+	return BuildQuestProvider.themes[theme_id].tasksDS;
 end
 
-function BuildQuestProvider:GetTheme(theme_id) --category
-	local cur_themes = BuildQuestProvider.themes;
+function BuildQuestProvider:GetTheme(theme_id)
 
+	echo(cur_themes, true);
 	return cur_themes[theme_id or 1];
 end
 

@@ -5,15 +5,12 @@
 </head>
 <body>
     <pe:mcml>
-        <script type="text/npl" refresh="false" src="ShareWindow.lua">
+        <script type="text/npl" refresh="false" src="TemplateShare.lua">
             <![CDATA[
-                NPL.load("(gl)script/ide/System/Windows/mcml/Elements/pe_repeat.lua");
-                System.Windows.mcml.Elements.pe_repeat:RegisterAs("pe:repeat");
-
-                ShareWindow = commonlib.gettable("Mod.ModelShare.ShareWindow");
+                TemplateShare = commonlib.gettable("Mod.ModelShare.share.TemplateShare");
                 
-                curShareWindow = ShareWindow.curInstance;
-                curShareWindow:SetPage();
+                curTemplateShare = TemplateShare.curInstance;
+                curTemplateShare:SetPage();
             ]]>
         </script>
         <style type="text/mcss">
@@ -38,26 +35,26 @@
            }
         </style>
         <div style="width:500px;height:270px;">
-            <aries:window mode="thin" width="450" height="500" style="color:white;" title='<%=L"保存模板" %>' onclose="curShareWindow.ClosePage">
+            <aries:window mode="thin" width="450" height="500" style="color:white;" title='<%=L"保存模板" %>' onclose="curTemplateShare.ClosePage">
                 <div style="padding:10px;padding-top:16px;">
                     <div>
                         <div class="pull-left" style="width:90px;height:110px;">
-                            <pe:if condition="<%= curShareWindow.screenshot()%>">
-                                <img name="CurrentSnapshot" style="width: 80px;height: 80px;" tooltip='<%=L"点击重新截图"%>' onclick="curShareWindow.OnClickTakeSnapshot"/>
+                            <pe:if condition="<%= curTemplateShare.screenshot()%>">
+                                <img name="CurrentSnapshot" style="width: 80px;height: 80px;" tooltip='<%=L"点击重新截图"%>' onclick="curTemplateShare.OnClickTakeSnapshot"/>
                             </pe:if>
-                            <pe:if condition="<%= not curShareWindow.screenshot()%>">
+                            <pe:if condition="<%= not curTemplateShare.screenshot()%>">
                                 <div style="width: 80px;height: 80px;background-color:#FFFFFF;textcolor:black;color:black">
                                     暂无截图
                                 </div>
                             </pe:if>
 
-                            <input type="button" onclick="curShareWindow.OnClickTakeSnapshot" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
+                            <input type="button" onclick="curTemplateShare.OnClickTakeSnapshot" class="common-button mc_light_grey_button_with_fillet" style="width:80px;height:25px;margin-top:5px;" value="刷新" />
                         </div>
                         <div class="pull-left" style="width:330px;">
                             <div style="margin-bottom:5px;">模板名称<input type="text" name="templateName" EmptyText="请输入模板名称" class="bbs_text common-field" style="margin-left:10px;"/></div>
                             <div style="margin-bottom:27px;">
                                 保存位置
-                                <select name="savePath" onclick="curShareWindow.SetSavePath" style="margin-left:10px;width:263px;" class="common-field">
+                                <select name="savePath" onclick="curTemplateShare.SetSavePath" style="margin-left:10px;width:263px;" class="common-field">
                                     <option value="world" name="" selected="selected">本地当前存档内</option>
                                     <option value="global" name="">本地模板库（即全局模板）</option>
                                     <option value="cloud" name="">KeepWork云</option>
@@ -80,28 +77,28 @@
                             </textarea>
                         </div>
                         <div style="margin-top:5px;">
-                            方块数量：<%= #ShareWindow.blocks %>
+                            方块数量：<%= #TemplateShare.blocks %>
                             体积：30 * 30 * 30
                         </div>
                     </div>
-                    <pe:if condition="<%= not curShareWindow.IsShareButton() %>" >
+                    <pe:if condition="<%= not curTemplateShare.IsShareButton() %>" >
                         <div style="margin-top:5px;">
                             <input type="checkbox" name="isShare" checked="checked"/>分享作品
                         </div>
                     </pe:if>
                     <div style="margin-top:5px;">
-                        <pe:if condition="<%= curShareWindow.isSignedIn()%>">
+                        <pe:if condition="<%= curTemplateShare.isSignedIn()%>">
                             <div>
                                 <div class="pull-left" style="width:80px;">
                                     作品标签：
                                 </div>
                                 <div class="pull-left" style="font-size:12px;base-font-size:12px;width:340px;">
                                     <div>
-                                        <input class="bbs_text common-field" name="templateLabel" onchange="curShareWindow.RefreshTemplateLabel" style="width:auto" value="原创;大富网络;一人一网" />
+                                        <input class="bbs_text common-field" name="templateLabel" onchange="curTemplateShare.RefreshTemplateLabel" style="width:auto" value="原创;大富网络;一人一网" />
                                     </div>
                                     <div>
                                         热门标签：
-                                        <pe:repeat DataSource='<%=curShareWindow.GetTemplateLabel()%>' style="float:left">
+                                        <pe:repeat DataSource='<%=curTemplateShare.GetTemplateLabel()%>' style="float:left">
                                             <pe:repeatitem>
                                                 <button class="tag-button mc_light_grey_button_with_fillet" value="<%=Eval('name')%>"></button>
                                             </pe:repeatitem>
@@ -111,25 +108,25 @@
                                 </div>
                             </div>
                         </pe:if>
-                        <pe:if condition="<%= not curShareWindow.isSignedIn()%>">
+                        <pe:if condition="<%= not curTemplateShare.isSignedIn()%>">
                             <div style="text-align:center;width:370px;height:65px;padding-top:20px;">
                                 登陆Keepwork，保存自己的作品&nbsp;&nbsp;
-                                <a style="textcolor:#FFFFFF;color:#FFFFFF;" onclick="curShareWindow.login">登陆</a>
-                                <a style="textcolor:#FFFFFF;color:#FFFFFF" onclick="curShareWindow.register">&nbsp;&nbsp;注册</a>
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF;" onclick="curTemplateShare.login">登陆</a>
+                                <a style="textcolor:#FFFFFF;color:#FFFFFF" onclick="curTemplateShare.register">&nbsp;&nbsp;注册</a>
                             </div>
                         </pe:if>
                     </div>
                     <div style="margin-top:15px;margin-left:110px;">
-                        <pe:if condition="<%= curShareWindow.BeLocal() %>" >
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.LocalSave()">保存</button>
+                        <pe:if condition="<%= curTemplateShare.BeLocal() %>" >
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curTemplateShare.LocalSave()">保存</button>
                         </pe:if>
-                        <pe:if condition="<%= curShareWindow.BeShare() %>">
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudSave()">分享</button>
+                        <pe:if condition="<%= curTemplateShare.BeShare() %>">
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curTemplateShare.CloudSave()">分享</button>
                         </pe:if>
-                        <pe:if condition="<%= curShareWindow.BeBoth() %>">
-                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curShareWindow.CloudAndLocalSave()">保存并分享</button>
+                        <pe:if condition="<%= curTemplateShare.BeBoth() %>">
+                            <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;margin-right:10px;" onclick="curTemplateShare.CloudAndLocalSave()">保存并分享</button>
                         </pe:if>
-                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="curShareWindow.ClosePage">取消</button>
+                        <button class="common-button mc_light_grey_button_with_fillet" style="height:35px;" onclick="curTemplateShare.ClosePage">取消</button>
                     </div>
                 </div>
             </aries:window>

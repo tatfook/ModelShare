@@ -7,12 +7,12 @@
 </head>
 <body>
     <pe:mcml>
-        <script refresh="false" type="text/npl" src="ModelManager.lua">
+        <script refresh="false" type="text/npl" src="Manager.lua">
             <![CDATA[
-                ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
+                Manager = commonlib.gettable("Mod.ModelShare.manager.Manager");
 
-                curModelManager = ModelManager.curInstance;
-                curModelManager:SetPage();
+                curManager = Manager.curInstance;
+                curManager:SetPage();
             ]]>
         </script>
         <style type="text/mcss">
@@ -51,23 +51,23 @@
 		        },
             }
         </style>
-        <aries:window mode="thin" title='<%=L"模板管理"%>' style="width:636px;height:450px;" onclose="curModelManager.ClosePage">
+        <aries:window mode="thin" title='<%=L"模板管理"%>' style="width:636px;height:450px;" onclose="curManager.ClosePage">
             <div style="width:636px;height:436px;margin-left:10px;margin-top:-4px;padding:0px;">
                 <div style="float:left;margin-left:0px;margin-top:15px;width:117px;">
-                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=curModelManager.GetTheme_DS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
+                    <pe:gridview name="gvwMCTheme" DefaultNodeHeight="32" DataSource="<%=curManager.GetTheme_DS%>" pagesize="10" ItemsPerLine="1" style="margin-left:-5px;" AllowPaging="true">
                         <Columns>
                             <div style="height:32px;">
                                 <pe:if condition='<%= Eval("name") == "empty" %>'>
                                     <div style="margin-left:35px;margin-top:1px;width:68px;height:23px;">
-                                        <input type="button" onclick="curModelManager.vip" tooltip='<%=L"点击创建新模板种类"%>' style="margin-left:15px;width:10px;height:10px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#501 203 10 10)" />
+                                        <input type="button" onclick="curManager.vip" tooltip='<%=L"点击创建新模板种类"%>' style="margin-left:15px;width:10px;height:10px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#501 203 10 10)" />
                                     </div>
                                 </pe:if>
                                 <pe:if condition='<%= Eval("name") ~= "empty" %>'>
-                                    <pe:if condition='<%= curModelManager.GetCurThemeIndex() == Eval("index") %>'>
+                                    <pe:if condition='<%= curManager.GetCurThemeIndex() == Eval("index") %>'>
                                         <input type="button" value='<%=Eval("name") %>' enabled="false" style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#208 89 21 21:4 4 4 4)" />
                                     </pe:if>
-                                    <pe:if condition='<%= curModelManager.GetCurThemeIndex() ~= Eval("index") %>'>
-                                        <input type="button" value='<%=Eval("name") %>' onclick="curModelManager.ChangeTheme" param1='<%=Eval("index") %>' style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" />
+                                    <pe:if condition='<%= curManager.GetCurThemeIndex() ~= Eval("index") %>'>
+                                        <input type="button" value='<%=Eval("name") %>' onclick="curManager.ChangeTheme" param1='<%=Eval("index") %>' style="margin-top:1px;width:110px;height:23px;font-size:12px;margin:0px;padding:0px;color:#ffffff;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#179 89 21 21:4 4 4 4)" />
                                     </pe:if>
                                 </pe:if>
                             </div>
@@ -84,10 +84,10 @@
                 </div>
                 <div style="float:left;margin-left:10px;margin-top:5px;width:1px;height:421px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 1)" />
                 <div style="float:left;width:200px;margin-top:15px;margin-left:10px;">
-                    <pe:gridview name="gvwMCTask" DefaultNodeHeight="32" DataSource="<%=curModelManager.GetTask_DS%>" pagesize="10" ItemsPerLine="1" AllowPaging="true">
+                    <pe:gridview name="gvwMCTask" DefaultNodeHeight="32" DataSource="<%=curManager.GetTask_DS%>" pagesize="10" ItemsPerLine="1" AllowPaging="true">
                         <Columns>
                             <div style="height:32px;">
-                                <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == true %>'>
+                                <pe:if condition='<%= curManager.TaskIsSelected(Eval("index")) == true %>'>
                                     <pe:if condition='<%= Eval("status") %>'>
                                         <div style="float:left;width:23px;height:23px;background-color:#15e200"></div>
                                     </pe:if>
@@ -96,10 +96,10 @@
                                     </pe:if>
                                     
                                     <input type="button" class="item_text item_text_select" value='<%=Eval("name") %>' enabled="false"/>
-                                    <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
-                                    <input type="button" class="item_close_button item_button_common" onclick="curModelManager.DeleteTemplate"/>
+                                    <input type="button" class="order item_button_common" onclick="curManager.shareTemplate"/>
+                                    <input type="button" class="item_close_button item_button_common" onclick="curManager.DeleteTemplate"/>
                                 </pe:if>
-                                <pe:if condition='<%= curModelManager.TaskIsSelected(Eval("index")) == false %>'>
+                                <pe:if condition='<%= curManager.TaskIsSelected(Eval("index")) == false %>'>
                                     <pe:if condition='<%= Eval("status") %>'>
                                         <div style="float:left;width:23px;height:23px;background-color:#15e200"></div>
                                     </pe:if>
@@ -107,9 +107,9 @@
                                         <div style="float:left;width:23px;height:23px;background-color:#ff0000"></div>
                                     </pe:if>
 
-                                    <input type="button" class="item_text item_text_unselect" value='<%=Eval("name") %>' onclick="curModelManager.ChangeTask" param1='<%=Eval("index") %>' />
-                                    <input type="button" class="order item_button_common" onclick="curModelManager.shareTemplate"/>
-                                    <input type="button" class="item_close_button item_button_common" onclick="curModelManager.DeleteTemplate"/>
+                                    <input type="button" class="item_text item_text_unselect" value='<%=Eval("name") %>' onclick="curManager.ChangeTask" param1='<%=Eval("index") %>' />
+                                    <input type="button" class="order item_button_common" onclick="curManager.shareTemplate"/>
+                                    <input type="button" class="item_close_button item_button_common" onclick="curManager.DeleteTemplate"/>
                                 </pe:if>
                             </div>
                         </Columns>
@@ -135,47 +135,47 @@
                 <div style="float:left;margin-left:0px;margin-top:0px;">
                     <div style="color:#FFFFFF;textcolor:#FFFFFF;padding:8px;margin-left:1px;margin-top:1px;height:260px;">
                         <div style="text-align:center;height:35px;font-size:20px;base-font-size:20px;width:275px;">
-                            <%=curModelManager.GetTaskName()%>
+                            <%=curManager.GetTaskName()%>
                         </div>
 
-                        <pe:if condition='<%= curModelManager.GetTaskInfo() and type(curModelManager.GetTaskInfo().infoCard) == "table" %>'>
-                            <div>模板编号：<%= curModelManager.GetTaskInfo().infoCard.sn %></div>
-                            <div>创建日期：<%= curModelManager.GetTaskInfo().infoCard.createDate %></div>
-                            <div>方块数量：<%= curModelManager.GetTaskInfo().infoCard.blocks %></div>
-                            <div>体积：<%= curModelManager.GetTaskInfo().infoCard.volume %></div>
-                            <div>用户信息：<%= curModelManager.GetTaskInfo().infoCard.username %></div>
-                            <div>分享模板：<%= tostring(curModelManager.GetTaskInfo().infoCard.isShare) == "1" and "是" or "否" %></div>
+                        <pe:if condition='<%= curManager.GetTaskInfo() and type(curManager.GetTaskInfo().infoCard) == "table" %>'>
+                            <div>模板编号：<%= curManager.GetTaskInfo().infoCard.sn %></div>
+                            <div>创建日期：<%= curManager.GetTaskInfo().infoCard.createDate %></div>
+                            <div>方块数量：<%= curManager.GetTaskInfo().infoCard.blocks %></div>
+                            <div>体积：    <%= curManager.GetTaskInfo().infoCard.volume %></div>
+                            <div>用户信息：<%= curManager.GetTaskInfo().infoCard.username %></div>
+                            <div>分享模板：<%= tostring(curManager.GetTaskInfo().infoCard.isShare) == "1" and "是" or "否" %></div>
                         </pe:if>
 
-                        <pe:if condition='<%= curModelManager.GetTaskInfo() and type(curModelManager.GetTaskInfo()) == "table" %>'>
-                            <pe:if condition='<%=not ModelManager.isEditing %>'>
-                                <pe:if condition='<%=curModelManager.CanEditing() %>'>
-                                    <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="curModelManager.OnChangeTaskDesc" style="position:relative;margin-top:3px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
+                        <pe:if condition='<%= curManager.GetTaskInfo() and type(curManager.GetTaskInfo()) == "table" %>'>
+                            <pe:if condition='<%=not Manager.isEditing %>'>
+                                <pe:if condition='<%=curManager.CanEditing() %>'>
+                                    <input type="button" name="btn_rename" tooltip='<%=L"修改描述"%>' onclick="curManager.OnChangeTaskDesc" style="position:relative;margin-top:3px;width:8px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 155 8 9)" />
                                 </pe:if>
-                                <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%= curModelManager.GetTaskInfo().desc %> </div>
+                                <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%= curManager.GetTaskInfo().desc %> </div>
                             </pe:if>
                             <pe:if condition='<%= ModelManager.isEditing %>'>
-                                <input type="button" tooltip='<%=L"保存"%>' onclick="curModelManager.OnSaveTaskDesc" style="position:relative;margin-top:3px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
+                                <input type="button" tooltip='<%=L"保存"%>' onclick="curManager.OnSaveTaskDesc" style="position:relative;margin-top:3px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
                                 <div style="margin-left:12px;margin-top:3px;width:260px;" class="mc_text">
-                                    <textarea name="content" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>' VerticalScrollBarStep="8" rows="4" value='<%=curModelManager.GetTaskInfo().desc %>' style="color:#cccccc;background:;"></textarea>
+                                    <textarea name="content" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>' VerticalScrollBarStep="8" rows="4" value='<%=curManager.GetTaskInfo().desc %>' style="color:#cccccc;background:;"></textarea>
                                 </div>
                             </pe:if>
                         </pe:if>
                     </div>
                     <div style="float:left;margin-left:0px;margin-top:-1px;width:290px;height:2px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#344 66 1 8)" />
                     <div style="margin-left:20px;margin-top:3px;">
-                        <pe:if condition="<%= curModelManager.screenshot()%>">
+                        <pe:if condition="<%= curManager.screenshot()%>">
                             <div style="text-align:center;width: 260px;height: 150px;background-color:#FFFFFF;textcolor:#000000;color:#000000">
-                                <img src="<%= curModelManager.templateImageUrl%>" style="width: 260px;height: 150px;" />
+                                <img src="<%= curManager.templateImageUrl%>" style="width: 260px;height: 150px;" />
                             </div>
                         </pe:if>
-                        <pe:if condition="<%= not curModelManager.screenshot()%>">
+                        <pe:if condition="<%= not curManager.screenshot()%>">
                             <div style="text-align:center;padding-top:60px;width: 260px;height: 150px;background-color:#FFFFFF;textcolor:#000000;color:#000000">
                                 暂无截图
                             </div>
                         </pe:if>
-                        <pe:if condition="<%= curModelManager.GetQuestTriggerText() ~= ''>">
-                            <input type="button" onclick="curModelManager.StartBuild" value='<%=curModelManager.GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-top:-30px;margin-left:110px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" />
+                        <pe:if condition="<%= curManager.GetQuestTriggerText() ~= ''>">
+                            <input type="button" onclick="curManager.StartBuild" value='<%=curManager.GetQuestTriggerText() %>' tooltip='<%=L"左键相对人物;右键为绝对位置"%>' style="margin-top:-30px;margin-left:110px;height:24px;color:#ffffff;font-size:16px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#236 89 26 26:10 10 10 10)" />
                         </pe:if>
                     </div>
                 </div>

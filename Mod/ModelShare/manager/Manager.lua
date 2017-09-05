@@ -94,11 +94,11 @@ function Manager.ClosePage()
 end
 
 function Manager.GetTheme_DS(index)
-	if(Manager.curInstance) then
-		self = Manager.curInstance;
+	if(not Manager.curInstance) then
+		return;
 	end
 
-    local themesDS = self.BuildQuestProvider:GetThemes_DS();
+    local themesDS = Manager.curInstance.BuildQuestProvider:GetThemes_DS();
 
     if(not index) then
         return #themesDS;
@@ -108,13 +108,11 @@ function Manager.GetTheme_DS(index)
 end
 
 function Manager.GetTask_DS(index)
-	if(Manager.curInstance) then
-		self = Manager.curInstance;
-	else
+	if(not Manager.curInstance) then
 		return;
 	end
 
-    local tasksDS = self.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index);
+    local tasksDS = Manager.curInstance.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index);
 
     if(not index) then
         return #tasksDS;
@@ -233,7 +231,7 @@ function Manager.CanEditing()
 	end
 
 	if(Manager.curInstance) then
-		curTheme = Manager.curInstance.GetTheme_DS(BuildQuest.template_theme_index);
+		curTheme = Manager.GetTheme_DS(BuildQuest.template_theme_index);
 	end
 	--echo(curTheme);
     if(curTheme) then

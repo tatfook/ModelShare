@@ -58,7 +58,7 @@ function TemplateShare:ShowPage()
 		--echo(TemplateShare.pivot);
 
 		System.App.Commands.Call("File.MCMLWindowFrame", {
-			url  = "Mod/ModelShare/sahre/TemplateShare.html", 
+			url  = "Mod/ModelShare/share/TemplateShare.html", 
 			name = "TemplateShare",
 			isShowTitleBar = false,
 			DestroyOnClose = true, -- prevent many ViewProfile pages staying in memory / false will only hide window
