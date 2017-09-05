@@ -51,6 +51,8 @@ function BuildQuestProvider:ctor()
 	self:LoadFromLocal();
 	self:LoadFromCloud();
 
+	echo(BuildQuestProvider.categoryDS, true);
+
 	for key, value in ipairs(BuildQuestProvider.categoryDS["globalTemplate"]) do
 
 	end
@@ -78,13 +80,13 @@ end
 
 function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 	local cur_themesDS   = BuildQuestProvider.categoryDS[themeKey]["themesDS"];
-	local cur_themes     = BuildQuestProvider.categoryDS[themeKey]["themes"];
 	local cur_themesType = BuildQuestProvider.categoryDS[themeKey]["themesType"];
-
+	local cur_themes     = BuildQuestProvider.categoryDS[themeKey]["themes"];
+	
 	if(themeKey == "globalTemplate") then
 		local hasOldGlobalFiles;
 
-		local output = GetFiles(themePath, function (msg)
+		local output = BuildQuestProvider:GetFiles(themePath, function (msg)
 			if(msg.filesize == 0 or string.match(msg.filename,"%.zip$")) then
 				-- folder or zip file
 				return true;
@@ -107,9 +109,7 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		theme_ds_name = "本存档模板";
 	end
 
-	local theme_index = #cur_themesDS + 1;
-
-	cur_themesDS[theme_index] = {
+	cur_themesDS = {
 		name         = theme_ds_name,
 		foldername   = themeKey,
 		order        = 10,
@@ -119,6 +119,8 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
 	};
 	
+	local theme_index = #cur_themes + 1;
+
 	cur_themes[theme_index] = ThemeClass:new({
 		--name         = theme_name_utf8,
 		--foldername   = theme_name,
@@ -129,10 +131,13 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		themeKey     = themeKey
 	});
 
-	local isThemeZipFile = false; --暂不考虑压缩情况
+	cur_themes[theme_index].tasksDS = {};
+	cur_themes[theme_index].tasks   = {};
 
 	local tasksDS = cur_themes[theme_index].tasksDS;
 	local tasks   = cur_themes[theme_index].tasks;
+
+	local isThemeZipFile = false; --暂不考虑压缩情况
 
 	local tasks_output;
 
@@ -203,7 +208,7 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 			local taskname = task_item:match("([^/\\]+)%.blocks%.xml$");
 			
 			if(taskname) then
-				task_index = #taskDS + 1;
+				task_index = #tasksDS + 1;
 
 				tasksDS[task_index] = {};
 
@@ -263,30 +268,36 @@ end
 
 function BuildQuestProvider:LoadFromCloud(callback)
 	local theme_index;
-	local cur_themes = BuildQuestProvider.themes;
 
-	if(not BuildQuestProvider.themesDS[3]) then
-		local cloudTheme = {
-			order        = 10,
-			foldername   = "cloudTemplate",
-			official     = false,
-			icon         = "",
-			unlock_coins = "0",
-			name         = "云模板",
-			image        = "",
-		};
+	BuildQuestProvider.categoryDS['cloudTemplate']['themes']     = {};
+	BuildQuestProvider.categoryDS['cloudTemplate']['themesDS']   = {};
+	BuildQuestProvider.categoryDS['cloudTemplate']['themesType'] = {};
 
-		BuildQuestProvider.themesDS[#BuildQuestProvider.themesDS + 1] = cloudTheme;
+	local cur_themes     = BuildQuestProvider.categoryDS['cloudTemplate']['themes'];
+	local cur_themesDS   = BuildQuestProvider.categoryDS['cloudTemplate']['themesDS'];
+	local cur_themesType = BuildQuestProvider.categoryDS['cloudTemplate']['themesType'];
 
-		theme_index = #cur_themes + 1; 
+	local cur_themesDS = {
+		order        = 10,
+		foldername   = "cloudTemplate",
+		official     = false,
+		icon         = "",
+		unlock_coins = "0",
+		name         = "云模板",
+		image        = "",
+	};
 
-		cur_themes[theme_index] = {
-			tasksDS = {},
-			
-		};
-	else
-		theme_index = 3;
-	end
+	theme_index = #cur_themes + 1; 
+
+	cur_themes[theme_index] = ThemeClass:new({
+		--name         = theme_name_utf8,
+		--foldername   = theme_name,
+		unlock_coins = "0",
+		image        = "",
+		icon         = "",
+		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
+		themeKey     = themeKey
+	});
 
 	if(loginMain.IsSignedIn()) then
 		local params = {

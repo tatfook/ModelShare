@@ -204,11 +204,11 @@ end
 function BuildQuest.LoadTemplate(filename, bx, by, bz, bSelect)
 	local task = BlockTemplate:new({
 		operation = BlockTemplate.Operations.Load,
-		filename = filename,
-		blockX = bx,
-		blockY = by,
-		blockZ = bz,
-		bSelect=bSelect
+		filename  = filename,
+		blockX    = bx,
+		blockY    = by,
+		blockZ    = bz,
+		bSelect   = bSelect
 	});
 
 	return task:Run();

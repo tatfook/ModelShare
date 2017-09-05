@@ -1,41 +1,41 @@
 ﻿--[[
-Title: ModelManager
+Title: Manager
 Author(s):  BIG
 Date: 2017.7
 Desc: 
 use the lib:
 ------------------------------------------------------------
-NPL.load("(gl)Mod/ModelShare/ModelManager.lua");
-local ModelManager = commonlib.gettable("Mod.ModelShare.ModelManager");
+NPL.load("(gl)Mod/ModelShare/Manager.lua");
+local Manager = commonlib.gettable("Mod.ModelShare.manager.Manager");
 ------------------------------------------------------------
 ]]
-NPL.load("(gl)Mod/ModelShare/BuildQuestTask.lua");
-NPL.load("(gl)Mod/ModelShare/BuildQuestProvider.lua");
-NPL.load("(gl)Mod/ModelShare/ShareWindow.lua");
+NPL.load("(gl)Mod/ModelShare/build/BuildQuestTask.lua");
+NPL.load("(gl)Mod/ModelShare/build/BuildQuestProvider.lua");
+NPL.load("(gl)Mod/ModelShare/share/TemplateShare.lua");
 
 local loginMain          = commonlib.gettable("Mod.WorldShare.login.loginMain");
-local BuildQuest         = commonlib.gettable("Mod.ModelShare.BuildQuest");
-local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.BuildQuestProvider");
-local ShareWindow        = commonlib.gettable("Mod.ModelShare.ShareWindow");
+local BuildQuest         = commonlib.gettable("Mod.ModelShare.build.BuildQuest");
+local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.build.BuildQuestProvider");
+local TemplateShare      = commonlib.gettable("Mod.ModelShare.share.TemplateShare");
 
-local ModelManager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.ModelManager"));
+local Manager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.manager.Manager"));
 
-ModelManager.isEditing = false;
+Manager.isEditing = false;
 
-function ModelManager:ctor()
+function Manager:ctor()
 	BuildQuest:new();
 
 	self.BuildQuestProvider = BuildQuestProvider:new();
 end
 
-function ModelManager:SetInstance()
-	ModelManager.curInstance = self;
+function Manager:SetInstance()
+	Manager.curInstance = self;
 end
 
-function ModelManager:ShowPage()
+function Manager:ShowPage()
 	System.App.Commands.Call("File.MCMLWindowFrame", {
-		url  = "Mod/ModelShare/ModelManager.html", 
-		name = "ModelManager",
+		url  = "Mod/ModelShare/manager/Manager.html", 
+		name = "Manager",
 		isShowTitleBar = false,
 		DestroyOnClose = true, -- prevent many ViewProfile pages staying in memory / false will only hide window
 		style = CommonCtrl.WindowFrame.ContainerStyle,
@@ -52,25 +52,25 @@ function ModelManager:ShowPage()
 	});
 end
 
-function ModelManager:SetPage()
+function Manager:SetPage()
 	self.page = document:GetPageCtrl();
 end
 
-function ModelManager.GetPage()
-	if(ModelManager.curInstance) then
-		return ModelManager.curInstance.page;
+function Manager.GetPage()
+	if(Manager.curInstance) then
+		return Manager.curInstance.page;
 	end
 end
 
-function ModelManager.Refresh()
-	if(ModelManager.curInstance) then
-		ModelManager.curInstance.page:Refresh(0.01);
+function Manager.Refresh()
+	if(Manager.curInstance) then
+		Manager.curInstance.page:Refresh(0.01);
 	end
 end
 
-function ModelManager.RefreshList()
-	if(ModelManager.curInstance) then
-		self = ModelManager.curInstance;
+function Manager.RefreshList()
+	if(Manager.curInstance) then
+		self = Manager.curInstance;
 
 		BuildQuest:new();
 		self.BuildQuestProvider = BuildQuestProvider:new();
@@ -79,23 +79,23 @@ function ModelManager.RefreshList()
 	end
 end
 
-function ModelManager:OnClose()
+function Manager:OnClose()
 	if(self.page) then
 		self.page:CloseWindow();
 	end
 
-	ModelManager.curInstance = nil;
+	Manager.curInstance = nil;
 end
 
-function ModelManager.ClosePage()
-	if(ModelManager.curInstance) then
-		ModelManager.curInstance:OnClose();
+function Manager.ClosePage()
+	if(Manager.curInstance) then
+		Manager.curInstance:OnClose();
 	end
 end
 
-function ModelManager.GetTheme_DS(index)
-	if(ModelManager.curInstance) then
-		self = ModelManager.curInstance;
+function Manager.GetTheme_DS(index)
+	if(Manager.curInstance) then
+		self = Manager.curInstance;
 	end
 
     local themesDS = self.BuildQuestProvider:GetThemes_DS();
@@ -107,9 +107,9 @@ function ModelManager.GetTheme_DS(index)
     end
 end
 
-function ModelManager.GetTask_DS(index)
-	if(ModelManager.curInstance) then
-		self = ModelManager.curInstance;
+function Manager.GetTask_DS(index)
+	if(Manager.curInstance) then
+		self = Manager.curInstance;
 	else
 		return;
 	end
@@ -123,9 +123,9 @@ function ModelManager.GetTask_DS(index)
     end
 end
 
-function ModelManager.GetTaskName()
-	if(ModelManager.curInstance) then
-		self = ModelManager.curInstance;
+function Manager.GetTaskName()
+	if(Manager.curInstance) then
+		self = Manager.curInstance;
 	else
 		return;
 	end
@@ -139,9 +139,9 @@ function ModelManager.GetTaskName()
     end
 end
 
-function ModelManager.GetTaskInfo()
-	if(ModelManager.curInstance) then
-		self = ModelManager.curInstance;
+function Manager.GetTaskInfo()
+	if(Manager.curInstance) then
+		self = Manager.curInstance;
 	else
 		return;
 	end
@@ -153,7 +153,7 @@ function ModelManager.GetTaskInfo()
 	end
 end
 
-function ModelManager.TaskIsLocked(index)
+function Manager.TaskIsLocked(index)
     if(index > BuildQuest.template_task_index) then
         return true;
     else
@@ -161,26 +161,26 @@ function ModelManager.TaskIsLocked(index)
     end
 end
 
-function ModelManager.vip()
+function Manager.vip()
 	_guihelper.MessageBox(L"VIP功能正在开发中...");
 end
 
-function ModelManager.GetCurThemeIndex()
+function Manager.GetCurThemeIndex()
     return BuildQuest.template_theme_index;
 end
 
-function ModelManager.ChangeTheme(name, mcmlNode)
+function Manager.ChangeTheme(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
     index       = tonumber(index);
 
 	if(index == 3 and not loginMain.IsSignedIn()) then
 		loginMain.modalCall = function()
-			if(ModelManager.curInstance) then
+			if(Manager.curInstance) then
 				BuildQuest.template_theme_index = 3;
 				BuildQuest.template_task_index  = 1;
 
-				ModelManager.curInstance.BuildQuestProvider:LoadFromCloud(function()
-					ModelManager.Refresh();
+				Manager.curInstance.BuildQuestProvider:LoadFromCloud(function()
+					Manager.Refresh();
 				end);
 			end
 		end;
@@ -194,18 +194,18 @@ function ModelManager.ChangeTheme(name, mcmlNode)
 		template_task_index  = 1,
 	});
 	
-	if(ModelManager.curInstance) then
-		ModelManager.curInstance.RestEditing();
+	if(Manager.curInstance) then
+		Manager.curInstance.RestEditing();
 	end
 
-    ModelManager.Refresh();
+    Manager.Refresh();
 end
 
-function ModelManager.RestEditing()
+function Manager.RestEditing()
 	isEditing = false;
 end
 
-function ModelManager.TaskIsSelected(index)
+function Manager.TaskIsSelected(index)
     if(BuildQuest.template_task_index == index) then
         return true;
     else
@@ -213,27 +213,27 @@ function ModelManager.TaskIsSelected(index)
     end
 end
 
-function ModelManager.ChangeTask(name, mcmlNode)
+function Manager.ChangeTask(name, mcmlNode)
     local index = mcmlNode:GetAttribute("param1");
 
     BuildQuest.template_task_index = tonumber(index);
 
-	if(ModelManager.curInstance) then
-		ModelManager.curInstance.RestEditing();
+	if(Manager.curInstance) then
+		Manager.curInstance.RestEditing();
 	end
 
-	ModelManager.Refresh();
+	Manager.Refresh();
 end
 
-function ModelManager.CanEditing()
+function Manager.CanEditing()
 	local curTheme;
 	
 	if(true) then
 		return true;
 	end
 
-	if(ModelManager.curInstance) then
-		curTheme = ModelManager.curInstance.GetTheme_DS(BuildQuest.template_theme_index);
+	if(Manager.curInstance) then
+		curTheme = Manager.curInstance.GetTheme_DS(BuildQuest.template_theme_index);
 	end
 	--echo(curTheme);
     if(curTheme) then
@@ -247,31 +247,31 @@ function ModelManager.CanEditing()
     return false;
 end
 
-function ModelManager.OnChangeTaskDesc()
-    ModelManager.isEditing = true;
-	ModelManager.Refresh();
+function Manager.OnChangeTaskDesc()
+    Manager.isEditing = true;
+	Manager.Refresh();
 end
 
-function ModelManager.OnSaveTaskDesc()
-    ModelManager.isEditing = false;
+function Manager.OnSaveTaskDesc()
+    Manager.isEditing = false;
 
-    local content = ModelManager.GetPage():GetValue("content", "");
+    local content = Manager.GetPage():GetValue("content", "");
     local desc    = string.gsub(content,"\r\n","<br />");
 
 	--echo(desc, true);
 
     self.BuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
-    ModelManager.Refresh();
+    Manager.Refresh();
 end
 
-function ModelManager.screenshot()
-	local TaskInfo = ModelManager.GetTaskInfo();
+function Manager.screenshot()
+	local TaskInfo = Manager.GetTaskInfo();
 
-	if(ModelManager.curInstance and TaskInfo and TaskInfo.infoCard) then
+	if(Manager.curInstance and TaskInfo and TaskInfo.infoCard) then
 		local templateDir  = TaskInfo.dir;
 		local templateSN   = TaskInfo.infoCard.sn; 
 
-		ModelManager.curInstance.templateImageUrl = templateDir .. templateSN .. ".jpg";
+		Manager.curInstance.templateImageUrl = templateDir .. templateSN .. ".jpg";
 
 		return true;
 	end
@@ -279,7 +279,7 @@ function ModelManager.screenshot()
 	return false;
 end
 
-function ModelManager.GetQuestTriggerText()
+function Manager.GetQuestTriggerText()
     local s        = "";
     local cur_task = BuildQuest:GetCurrentQuest();
 
@@ -302,7 +302,7 @@ function ModelManager.GetQuestTriggerText()
     return s;
 end
 
-function ModelManager.StartBuild()
+function Manager.StartBuild()
 	if(BuildQuest.cur_theme_index == 1) then
 		local cur_task = BuildQuest:GetCurrentQuest();
 
@@ -330,10 +330,10 @@ function ModelManager.StartBuild()
 		BuildQuest.CreateFromTemplate(curTheme.tasks[BuildQuest.template_task_index].filename);
 	end
 
-    ModelManager.ClosePage();
+    Manager.ClosePage();
 end
 
-function ModelManager.DeleteTemplate()
+function Manager.DeleteTemplate()
 	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
 		if(res and res == _guihelper.DialogResult.Yes) then
 
@@ -355,14 +355,14 @@ function ModelManager.DeleteTemplate()
 			if (curTheme.themeKey == "globalTemplate") then
 				if(ParaIO.DoesFileExist(curTask.filepath)) then
 					ParaIO.DeleteFile(curTask.dir);
-					ModelManager.RefreshList();
+					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
 			elseif(curTheme.themeKey == "worldTemplate") then
 				if(ParaIO.DoesFileExist(curTask.filename)) then
 					ParaIO.DeleteFile(curTask.filename);
-					ModelManager.RefreshList();
+					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
@@ -373,7 +373,7 @@ function ModelManager.DeleteTemplate()
 	end, _guihelper.MessageBoxButtons.YesNo);
 end
 
-function ModelManager.shareTemplate()
+function Manager.shareTemplate()
 	local curShareWindow = ShareWindow:new();
 	curShareWindow:SetInstance();
 	curShareWindow:FolderToCloud();
