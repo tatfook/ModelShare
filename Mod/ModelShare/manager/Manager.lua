@@ -25,7 +25,11 @@ Manager.isEditing = false;
 function Manager:ctor()
 	BuildQuest:new();
 
-	self.BuildQuestProvider = BuildQuestProvider:new();
+	self.BuildQuestProvider = BuildQuestProvider:new({
+		cloudLoadFinish = function()
+			Manager.Refresh();
+		end
+	});
 end
 
 function Manager:SetInstance()
@@ -33,6 +37,9 @@ function Manager:SetInstance()
 end
 
 function Manager:ShowPage()
+	BuildQuest.template_theme_index = 1;
+	BuildQuest.template_task_index  = 1;
+
 	System.App.Commands.Call("File.MCMLWindowFrame", {
 		url  = "Mod/ModelShare/manager/Manager.html", 
 		name = "Manager",
@@ -175,9 +182,11 @@ function Manager.ChangeTheme(name, mcmlNode)
 				BuildQuest.template_theme_index = 3;
 				BuildQuest.template_task_index  = 1;
 
-				Manager.curInstance.BuildQuestProvider:LoadFromCloud(function()
-					Manager.Refresh();
-				end);
+				Manager.curInstance.BuildQuestProvider = BuildQuestProvider:new({
+					cloudLoadFinish = function()
+						Manager.Refresh();
+					end
+				});
 			end
 		end;
 
@@ -231,7 +240,7 @@ function Manager.CanEditing()
 	if(Manager.curInstance) then
 		curTheme = Manager.GetTheme_DS(BuildQuest.template_theme_index);
 	end
-	--echo(curTheme);
+
     if(curTheme) then
         if(curTheme.official) then
             return false;
@@ -249,14 +258,15 @@ function Manager.OnChangeTaskDesc()
 end
 
 function Manager.OnSaveTaskDesc()
+	if(not Manager.curInstance) then
+		return;
+	end
+
     Manager.isEditing = false;
 
-    local content = Manager.GetPage():GetValue("content", "");
-    local desc    = string.gsub(content,"\r\n","<br />");
+    local desc = string.gsub(Manager.GetPage():GetValue("content", ""), "\r\n","<br />");
 
-	--echo(desc, true);
-
-    self.BuildQuestProvider:OnSaveTaskDesc(theme_index, task_index,desc);
+    Manager.curInstance.BuildQuestProvider:OnSaveTaskDesc(BuildQuest.template_theme_index, BuildQuest.template_task_index, desc);
     Manager.Refresh();
 end
 
@@ -264,11 +274,15 @@ function Manager.screenshot()
 	local TaskInfo = Manager.GetTaskInfo();
 
 	if(Manager.curInstance and TaskInfo and TaskInfo.infoCard) then
+		
 		local templateDir  = TaskInfo.dir;
 		local templateSN   = TaskInfo.infoCard.sn; 
 
-		Manager.curInstance.templateImageUrl = templateDir .. templateSN .. ".jpg";
+		if(not templateDir) then
+			return false;
+		end
 
+		Manager.curInstance.templateImageUrl = templateDir .. templateSN .. ".jpg";
 		return true;
 	end
 
@@ -332,38 +346,42 @@ end
 function Manager.DeleteTemplate()
 	_guihelper.MessageBox(format(L"确定删除此模板:%s?", ""), function(res)
 		if(res and res == _guihelper.DialogResult.Yes) then
+			local curTheme  = Manager.curInstance.BuildQuestProvider:GetThemes_DS(BuildQuest.template_theme_index);
+			local curTaskDS = Manager.curInstance.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
-			local curTheme = BuildQuestProvider.themes[BuildQuest.template_theme_index];
-			echo(curTheme);
-
-			local curTask  = BuildQuestProvider.tasksDS[BuildQuest.template_task_index];
-
-			if(BuildQuest.template_task_index ~= 1 and BuildQuest.template_task_index == #curTheme.tasks) then
+			if(BuildQuest.template_task_index ~= 1 and BuildQuest.template_task_index == #curTaskDS) then
 				BuildQuest.template_task_index = BuildQuest.template_task_index - 1;
 			end
 
-			echo(curTask);
-
-			if(true) then
-				return;
-			end
-
 			if (curTheme.themeKey == "globalTemplate") then
-				if(ParaIO.DoesFileExist(curTask.filepath)) then
-					ParaIO.DeleteFile(curTask.dir);
+				echo(curTaskDS, true);
+				if(ParaIO.DoesFileExist(curTaskDS.filepath)) then
+					ParaIO.DeleteFile(curTaskDS.dir);
 					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
 			elseif(curTheme.themeKey == "worldTemplate") then
-				if(ParaIO.DoesFileExist(curTask.filename)) then
-					ParaIO.DeleteFile(curTask.filename);
+				echo(curTaskDS, true);
+				
+				if(ParaIO.DoesFileExist(curTaskDS.filename)) then
+					ParaIO.DeleteFile(curTaskDS.filename);
 					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
 			elseif(curTheme.themeKey == "cloudTemplate") then
-				_guihelper.MessageBox("OKOKOK");
+				Manager.curInstance.BuildQuestProvider:DeleteCloudTemplate(curTaskDS.sn,function(beSuccess)
+					if(beSuccess) then
+						Manager.curInstance.BuildQuestProvider = BuildQuestProvider:new({
+							cloudLoadFinish = function()
+								Manager.Refresh();
+							end
+						});
+					else
+						_guihelper.MessageBox(L"删除失败");
+					end
+				end);
 			end
 		end
 	end, _guihelper.MessageBoxButtons.YesNo);
