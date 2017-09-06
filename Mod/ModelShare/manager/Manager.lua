@@ -122,13 +122,11 @@ function Manager.GetTask_DS(index)
 end
 
 function Manager.GetTaskName()
-	if(Manager.curInstance) then
-		self = Manager.curInstance;
-	else
+	if(not Manager.curInstance) then
 		return;
 	end
 
-    local task = self.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+    local task = Manager.curInstance.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
     if(task) then
         return task.name or "";
@@ -138,16 +136,16 @@ function Manager.GetTaskName()
 end
 
 function Manager.GetTaskInfo()
-	if(Manager.curInstance) then
-		self = Manager.curInstance;
-	else
+	if(not Manager.curInstance) then
 		return;
 	end
 
-    local task = self.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+    local task = Manager.curInstance.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
 	if(task) then
 		return task;
+	else
+		return {};
 	end
 end
 

@@ -154,7 +154,7 @@
                                 </pe:if>
                                 <div style="position:relative;margin:20px;margin-top:40px;color:#cccccc;"><%= curManager.GetTaskInfo().desc %> </div>
                             </pe:if>
-                            <pe:if condition='<%= ModelManager.isEditing %>'>
+                            <pe:if condition='<%= Manager.isEditing %>'>
                                 <input type="button" tooltip='<%=L"保存"%>' onclick="curManager.OnSaveTaskDesc" style="position:relative;margin-top:3px;width:9px;height:9px;background:url(Texture/Aries/Creator/Theme/GameCommonIcon_32bits.png#495 141 9 9)" />
                                 <div style="margin-left:12px;margin-top:3px;width:260px;" class="mc_text">
                                     <textarea name="content" EmptyText='<%=L"点击这里输入(Ctrl+V可以粘贴)"%>' VerticalScrollBarStep="8" rows="4" value='<%=curManager.GetTaskInfo().desc %>' style="color:#cccccc;background:;"></textarea>

@@ -122,9 +122,7 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
 	});
 
-	local theme_index = #cur_themes + 1;
-
-	cur_themes[theme_index] = ThemeClass:new({
+	cur_themes = ThemeClass:new({
 		--name         = theme_name_utf8,
 		--foldername   = theme_name,
 		unlock_coins = "0",
@@ -133,12 +131,14 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 		official     = BuildQuestProvider.categoryDS[themeKey]["beOfficial"],
 		themeKey     = themeKey
 	});
+	
+	BuildQuestProvider.categoryDS[themeKey]["themes"] = cur_themes;
 
-	cur_themes[theme_index].tasksDS = {};
-	cur_themes[theme_index].tasks   = {};
+	cur_themes.tasksDS = {};
+	cur_themes.tasks   = {};
 
-	local tasksDS = cur_themes[theme_index].tasksDS;
-	local tasks   = cur_themes[theme_index].tasks;
+	local tasksDS = cur_themes.tasksDS;
+	local tasks   = cur_themes.tasks;
 
 	local isThemeZipFile = false; --暂不考虑压缩情况
 
@@ -190,7 +190,7 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 				commonlib.partialcopy(tasksDS[task_index], task_attr);
 				tasksDS[task_index].task_index = task_index;
 
-				tasks[task_index] = TaskClass:new(task_attr):Init(node, cur_themes[theme_index], task_index, themeKey);
+				tasks[task_index] = TaskClass:new(task_attr):Init(node, cur_themes, task_index, themeKey);
 
 				local infoCard     = themePath .. taskname .. "/" .. taskname .. ".info.xml";
 				local templateInfo = ParaXML.LuaXML_ParseFile(infoCard);
@@ -360,25 +360,19 @@ function BuildQuestProvider:GetTasks_DS(theme_id)
 	if(not next(BuildQuestProvider.themes)) then
 		return {};
 	end
-
+	--echo(theme_id);
+	--echo(BuildQuestProvider.themes);
+	--echo(BuildQuestProvider.themes[theme_id]);
 	return BuildQuestProvider.themes[theme_id].tasksDS;
 end
 
-function BuildQuestProvider:GetTheme(theme_id)
-
-	echo(cur_themes, true);
-	return cur_themes[theme_id or 1];
-end
-
 function BuildQuestProvider:GetTask(theme_id, task_id)
-	if(self == nil) then
-		return;
+	if(not next(BuildQuestProvider.themes) and not BuildQuestProvider.themes[theme_id]) then
+		return {};
 	end
 
-	local theme = self:GetTheme(theme_id);
-
-	if(theme and type(theme.GetTask) == "function") then
-		return theme:GetTask(task_id);
+	if(type(BuildQuestProvider.themes[theme_id].GetTask) == "function") then
+		return BuildQuestProvider.themes[theme_id]:GetTask(task_id);
 	end
 end
 

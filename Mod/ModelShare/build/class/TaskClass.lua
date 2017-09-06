@@ -51,7 +51,7 @@ function TaskClass:Init(xml_node, theme, task_index, category)
 		steps[#steps+1] = StepClass:new(node.attr):Init(node, self);
 	end
 
-	self.theme = theme;
+	--self.theme = theme;
 
 	return self;
 end
