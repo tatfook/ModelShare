@@ -351,23 +351,22 @@ function TemplateShare.CloudApi()
 	return loginMain.site .. "/api/mod/modelshare/models/modelshare/";
 end
 
-function TemplateShare.CloudSave(type)
-	if(not type) then
-		type = "cloud";
+function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc, blocks)
+	if(not savePalce) then
+		savePalce = "cloud";
 	end
 
 	if(not loginMain.IsSignedIn()) then
-		_guihelper.MessageBox(L"请登录之后再分享");
-		return;
+		return false;
 	end
 
-	if(type == "cloud") then
+	if(savePalce == "cloud") then
 		local template_base_dir = TemplateShare.global_template_dir;
 
-		local isShare  = TemplateShare.GetPage():GetValue("isShare");
+		local isShare  = type(isShare) == "number" and isShare or TemplateShare.GetPage():GetValue("isShare");
 
 		local name   = {};
-		name.utf8    = TemplateShare.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		name.utf8    = templateName and templateName or TemplateShare.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
 
 		if(name.utf8 == "")  then
 			_guihelper.MessageBox(L"名字不能为空~");
@@ -377,7 +376,7 @@ function TemplateShare.CloudSave(type)
 		name.utf8    = name.utf8:gsub("%s", "");
 		name.default = commonlib.Encoding.Utf8ToDefault(name.utf8);
 
-		local desc = TemplateShare.GetPage():GetValue("templateDesc");
+		local desc = templateDesc and templateDesc or TemplateShare.GetPage():GetValue("templateDesc");
 
 		if(desc) then
 			desc = string.gsub(desc,"\r?\n","<br/>");
@@ -401,7 +400,7 @@ function TemplateShare.CloudSave(type)
 			},
 			form    = params,
 		},function(data, err)
-			--echo(data, true);
+			echo(data, true);
 
 			local numberName = {};
 
@@ -461,7 +460,7 @@ function TemplateShare.CloudSave(type)
 
 			upload();
 		end);
-	elseif(type == "world") then
+	elseif(savePalce == "world") then
 		echo("分享至世界存档");
 	end
 end

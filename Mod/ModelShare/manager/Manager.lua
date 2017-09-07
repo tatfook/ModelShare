@@ -353,24 +353,21 @@ function Manager.DeleteTemplate()
 				BuildQuest.template_task_index = BuildQuest.template_task_index - 1;
 			end
 
-			if (curTheme.themeKey == "globalTemplate") then
-				echo(curTaskDS, true);
+			if (curTheme.foldername == "globalTemplate") then
 				if(ParaIO.DoesFileExist(curTaskDS.filepath)) then
 					ParaIO.DeleteFile(curTaskDS.dir);
 					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
-			elseif(curTheme.themeKey == "worldTemplate") then
-				echo(curTaskDS, true);
-				
+			elseif(curTheme.foldername == "worldTemplate") then				
 				if(ParaIO.DoesFileExist(curTaskDS.filename)) then
 					ParaIO.DeleteFile(curTaskDS.filename);
 					Manager.RefreshList();
 				else
 					_guihelper.MessageBox(L"删除失败");
 				end
-			elseif(curTheme.themeKey == "cloudTemplate") then
+			elseif(curTheme.foldername == "cloudTemplate") then
 				Manager.curInstance.BuildQuestProvider:DeleteCloudTemplate(curTaskDS.sn,function(beSuccess)
 					if(beSuccess) then
 						Manager.curInstance.BuildQuestProvider = BuildQuestProvider:new({
@@ -388,7 +385,33 @@ function Manager.DeleteTemplate()
 end
 
 function Manager.shareTemplate()
-	local curShareWindow = ShareWindow:new();
-	curShareWindow:SetInstance();
-	curShareWindow:FolderToCloud();
+	local curTheme = Manager.curInstance.BuildQuestProvider:GetThemes_DS(BuildQuest.template_theme_index);
+	local curTask  = Manager.curInstance.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+
+	if(curTheme.foldername == "globalTemplate") then
+		if(curTask.infoCard) then
+			_guihelper.MessageBox(L"此模板已上传至数据源，无法再次上传");
+			return;
+		end
+
+		echo(curTask, true);
+--		if(not TemplateShare.CloudSave("cloud", 1, curTask.name, curTask.desc)) then
+--			loginMain.modalCall = function()
+--				if(Manager.curInstance) then
+--					Manager.BuildQuestProvider = BuildQuestProvider:new({
+--						cloudLoadFinish = function()
+--							Manager.Refresh();
+--							Manager.shareTemplate();
+--						end
+--					});
+--				end
+--			end
+--
+--			loginMain.showLoginModalImp();
+--		end
+	elseif(curTheme.foldername == "worldTemplate") then
+		echo(222)
+	elseif(curTheme.foldername == "cloudTemplate") then
+		echo(333)
+	end
 end

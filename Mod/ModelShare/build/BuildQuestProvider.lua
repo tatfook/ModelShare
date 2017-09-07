@@ -232,7 +232,10 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 				tasksDS[task_index] = {};
 
-				local file = {name = taskname};
+				local file = {
+					name     = taskname,
+					filename = BuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
+				};
 
 				commonlib.partialcopy(tasksDS[task_index], file);
 				tasksDS[task_index].task_index = task_index;
@@ -301,7 +304,6 @@ function BuildQuestProvider:LoadFromCloud(callback)
 		unlock_coins = "0",
 		name         = "云模板",
 		image        = "",
-		themeKey     = theme_name,
 	});
 
 	cur_themes = ThemeClass:new({
