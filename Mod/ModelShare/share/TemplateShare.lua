@@ -302,7 +302,7 @@ function TemplateShare.LocalSave(template_dir, template_name, template_foldernam
 
 		local pivot = string.format("%d,%d,%d", TemplateShare.pivot[1], TemplateShare.pivot[2], TemplateShare.pivot[3]);
 
-		TemplateShare.SaveToTemplate(filename, TemplateShare.blocks, {
+		local blocksXml = {
 			name            = template_name.utf8,
 			desc            = desc,
 			author_nid      = System.User.nid,
@@ -310,7 +310,13 @@ function TemplateShare.LocalSave(template_dir, template_name, template_foldernam
 			player_pos      = player_pos,
 			pivot           = pivot,
 			relative_motion = page:GetValue("checkboxRelativeMotion", false),
-		},function ()
+		};
+
+		if(isSaveInLocalWorld) then
+			blocksXml.blocks_total = #TemplateShare.blocks;
+		end
+
+		TemplateShare.SaveToTemplate(filename, TemplateShare.blocks, blocksXml,function ()
 			if(isSaveInLocalWorld) then
 				local imageFileName
 
@@ -518,21 +524,21 @@ function TemplateShare.SaveToTemplate(filename, blocks, params, callbackFunc, bS
 	end
 
 	local task = BlockTemplate:new({
-		operation = BlockTemplate.Operations.Save,
-		filename  = filename,
-		params    = params,
-		blocks    = blocks
+		operation   = BlockTemplate.Operations.Save,
+		filename    = filename,
+		params      = params,
+		blocks      = blocks,
 	});
 
 	if(task:Run()) then
 		BroadcastHelper.PushLabel({
-			id="BlockTemplatePage",
-			label = format(L"模板成功保存到:%s", commonlib.Encoding.DefaultToUtf8(filename)),
-			max_duration=4000,
-			color = "0 255 0",
-			scaling=1.1,
-			bold=true,
-			shadow=true,
+			id           = "BlockTemplatePage",
+			label        = format(L"模板成功保存到:%s", commonlib.Encoding.DefaultToUtf8(filename)),
+			max_duration = 4000,
+			color        = "0 255 0",
+			scaling      = 1.1,
+			bold         = true,
+			shadow       = true,
 		});
 		
 		TemplateShare.ClosePage();
@@ -549,22 +555,41 @@ function TemplateShare.SaveToTemplate(filename, blocks, params, callbackFunc, bS
 	end
 end
 
-function TemplateShare.CreateBuildingTaskFile(filename, blocksfilename, taskname, _blocks, desc)
-	--echo("filename");
-	--echo(filename);
-	local blocks = _blocks;
-	local file   = ParaIO.open(filename, "w");
+function TemplateShare.CreateBuildingTaskFile(filename, blocksfilename, taskname, blocks, desc)
+	if(not filename and not blocksfilename and not taskname and not not next(blocks) and not desc) then
+		return false;
+	end
+
+	local file = ParaIO.open(filename, "w");
 
 	if(file:IsValid()) then
+		local blocks_total;
+
+		if(blocks) then
+			blocks_total = #blocks;
+		else
+			local select_task = SelectBlocks.GetCurrentInstance();
+
+			if(select_task) then
+				local blocks = select_task:GetCopyOfBlocks();
+
+				blocks_total = #blocks;
+			else
+				file:close();
+				return;
+			end
+		end
+
 		local o = {
 			name="Task",
 			attr = {
-				name = taskname,
-				click_once_deploy="true",
-				icon = "",
-				image = "",
-				desc = desc or taskname,
-				UseAbsolutePos = "false"
+				name              = taskname,
+				click_once_deploy = "true",
+				icon              = "",
+				image             = "",
+				desc              = desc or taskname,
+				UseAbsolutePos    = "false",
+				blocks_total      = blocks_total,
 			},
 		};
 
@@ -576,27 +601,10 @@ function TemplateShare.CreateBuildingTaskFile(filename, blocksfilename, taskname
 			},
 		};
 
-		local blocksNum;
-
-		if(blocks) then
-			blocksNum = #blocks;
-		else
-			local select_task = SelectBlocks.GetCurrentInstance();
-
-			if(select_task) then
-				local blocks = select_task:GetCopyOfBlocks();
-
-				blocksNum = #blocks;
-			else
-				file:close();
-				return;
-			end
-		end
-
 		o[1][1] = {
 				name = "tip",
 				attr = {
-				block = string.format("0-%d",blocksNum - 1)
+				block = string.format("0-%d", blocks_total - 1)
 			},
 		};
 

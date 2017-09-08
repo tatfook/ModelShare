@@ -386,7 +386,7 @@ end
 
 function Manager.shareTemplate()
 	local curTheme = Manager.curInstance.BuildQuestProvider:GetThemes_DS(BuildQuest.template_theme_index);
-	local curTask  = Manager.curInstance.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+	local curTask  = Manager.curInstance.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
 	if(curTheme.foldername == "globalTemplate") then
 		if(curTask.infoCard) then
@@ -410,7 +410,8 @@ function Manager.shareTemplate()
 --			loginMain.showLoginModalImp();
 --		end
 	elseif(curTheme.foldername == "worldTemplate") then
-		echo(222)
+		echo(222);
+		echo(curTask, true);
 	elseif(curTheme.foldername == "cloudTemplate") then
 		echo(333)
 	end

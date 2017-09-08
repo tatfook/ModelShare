@@ -225,25 +225,29 @@ function BuildQuestProvider:LoadFromTemplate(themeKey, themePath)
 
 	if(themeKey == "worldTemplate") then
 		for _, task_item in ipairs(tasks_output) do 
-			local taskname = task_item:match("([^/\\]+)%.blocks%.xml$");
+			local block_path = GameLogic.current_worlddir .. "blocktemplates/" .. task_item;
+			local taskname   = task_item:match("([^/\\]+)%.blocks%.xml$");
 			
+			templateInfo = ParaXML.LuaXML_ParseFile(block_path);
+
 			if(taskname) then
 				task_index = #tasksDS + 1;
 
 				tasksDS[task_index] = {};
 
 				local file = {
-					name     = taskname,
-					filename = BuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
+					name         = taskname,
+					blocks_total = templateInfo[1].attr.blocks_total, 
+					filename     = BuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
 				};
 
 				commonlib.partialcopy(tasksDS[task_index], file);
 				tasksDS[task_index].task_index = task_index;
 
 				tasks[task_index] = {
-					name     = taskname,
-					type     = "template",
-					filename = BuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
+					name         = taskname,
+					type         = "template",
+					filename     = BuildQuestProvider.categoryPaths['worldTemplate'] .. task_item,
 				};
 			end
 		end
