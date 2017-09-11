@@ -12,7 +12,9 @@ local Manager = commonlib.gettable("Mod.ModelShare.manager.Manager");
 NPL.load("(gl)Mod/ModelShare/build/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/build/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/share/TemplateShare.lua");
+NPL.load("(gl)Mod/WorldShare/service/GitlabService.lua");
 
+local GitlabService      = commonlib.gettable("Mod.WorldShare.service.GitlabService");
 local loginMain          = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local BuildQuest         = commonlib.gettable("Mod.ModelShare.build.BuildQuest");
 local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.build.BuildQuestProvider");
@@ -385,34 +387,80 @@ function Manager.DeleteTemplate()
 end
 
 function Manager.shareTemplate()
-	local curTheme = Manager.curInstance.BuildQuestProvider:GetThemes_DS(BuildQuest.template_theme_index);
-	local curTask  = Manager.curInstance.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+	local curTheme  = Manager.curInstance.BuildQuestProvider:GetThemes_DS(BuildQuest.template_theme_index);
+	local curTaskDS = Manager.curInstance.BuildQuestProvider:GetTasks_DS(BuildQuest.template_theme_index, BuildQuest.template_task_index);
+	local curTask   = Manager.curInstance.BuildQuestProvider:GetTask(BuildQuest.template_theme_index, BuildQuest.template_task_index);
 
 	if(curTheme.foldername == "globalTemplate") then
+		-- upload
 		if(curTask.infoCard) then
 			_guihelper.MessageBox(L"此模板已上传至数据源，无法再次上传");
 			return;
 		end
 
 		echo(curTask, true);
---		if(not TemplateShare.CloudSave("cloud", 1, curTask.name, curTask.desc)) then
---			loginMain.modalCall = function()
---				if(Manager.curInstance) then
---					Manager.BuildQuestProvider = BuildQuestProvider:new({
---						cloudLoadFinish = function()
---							Manager.Refresh();
---							Manager.shareTemplate();
---						end
---					});
---				end
---			end
---
---			loginMain.showLoginModalImp();
---		end
+		local curTemplateShare = TemplateShare:new();
+
+		if(not curTemplateShare.CloudSave("cloud", 1, curTask.name, curTask.desc, curTask.blocks_total)) then
+			loginMain.modalCall = function()
+				if(Manager.curInstance) then
+					Manager.BuildQuestProvider = BuildQuestProvider:new({
+						cloudLoadFinish = function()
+							Manager.Refresh();
+							Manager.shareTemplate();
+						end
+					});
+				end
+			end
+
+			loginMain.showLoginModalImp();
+		end
 	elseif(curTheme.foldername == "worldTemplate") then
+		-- upload
 		echo(222);
-		echo(curTask, true);
+		echo(curTaskDS, true);
 	elseif(curTheme.foldername == "cloudTemplate") then
+		-- download
+
+		local cloudBlock = format("%s.blocks.xml", curTaskDS.sn);
+		local cloudIMG   = format("%s.jpg", curTaskDS.sn);
+		local cloudTask   = format("%s.xml", curTaskDS.sn);
+		local cloudInfo   = format("%s.info.xml", curTaskDS.sn);
+
+		if(not curTaskDS.status) then
+			GitlabService:getTree(function(data, err)
+				local blockPath;
+				local IMGPath;
+				local TaskPath;
+				local InfoPath;
+
+				for key, item in ipairs(data) do
+					if(string.find(item.path, cloudBlock)) then
+						blockPath = item.path;
+					end
+
+					if(string.find(item.path, cloudIMG)) then
+						IMGPath = item.path;
+					end
+
+					if(string.find(item.path, cloudTask)) then
+						TaskPath = item.path;
+					end
+
+					if(string.find(item.path, cloudInfo)) then
+						InfoPath = item.path;
+					end
+				end
+
+				echo(blockPath);
+				echo(IMGPath);
+				echo(TaskPath);
+				echo(InfoPath);
+			
+			end, "master", loginMain.keepWorkDataSourceId);
+		else
+			_guihelper.MessageBox(L"模板已下载");
+		end
 		echo(333)
 	end
 end

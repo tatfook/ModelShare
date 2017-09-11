@@ -46,7 +46,7 @@ function TemplateShare:ShowPage()
 		local pivot_x, pivot_y, pivot_z = selectBlocksInstance:GetSelectionPivot();
 
 		if(selectBlocksInstance.UsePlayerPivotY) then
-			local x,y,z    = ParaScene.GetPlayer():GetPosition();
+			local x, y, z  = ParaScene.GetPlayer():GetPosition();
 			local _, by, _ = BlockEngine:block(0, y + 0.1, 0);
 
 			pivot_y = by;
@@ -106,7 +106,7 @@ function TemplateShare:SetPage()
 end
 
 function TemplateShare.GetPage()
-	if(not TemplateShare.curInstance.page) then
+	if(not TemplateShare.curInstance or not TemplateShare.curInstance.page) then
 		return;
 	end
 
@@ -226,7 +226,10 @@ function TemplateShare.IsShareButton()
 	end
 end
 
-function TemplateShare.LocalSave(template_dir, template_name, template_foldername)
+function TemplateShare.LocalSave(template_dir, template_name, template_foldername, template_desc)
+	--echo(template_dir);
+	--echo(template_name);
+	--echo(template_foldername);
 	local page = TemplateShare.GetPage();
 
 	local bSaveSnapshot;
@@ -262,9 +265,11 @@ function TemplateShare.LocalSave(template_dir, template_name, template_foldernam
 		template_name.default = commonlib.Encoding.Utf8ToDefault(template_name.utf8);
 	end
 
-	local desc = page:GetUIValue("template_desc"); --or page:GetUIValue("template_desc") or "";
-    desc = string.gsub(desc,"\r?\n","<br/>");
-	
+	if(not template_desc) then
+		local desc = page:GetUIValue("template_desc"); --or page:GetUIValue("template_desc") or "";
+		desc = string.gsub(desc,"\r?\n","<br/>");
+	end
+
 	if(template_name.utf8 == "")  then
 		_guihelper.MessageBox(L"名字不能为空~");
 		return;
@@ -369,10 +374,10 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 	if(savePalce == "cloud") then
 		local template_base_dir = TemplateShare.global_template_dir;
 
-		local isShare  = type(isShare) == "number" and isShare or TemplateShare.GetPage():GetValue("isShare");
+		local isShare = type(isShare) == "number" and isShare or TemplateShare.GetPage():GetValue("isShare");
 
-		local name   = {};
-		name.utf8    = templateName and templateName or TemplateShare.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
+		local name = {};
+		name.utf8  = templateName and templateName or TemplateShare.GetPage():GetValue("templateName"); --or page:GetUIValue("tl_name") or "";
 
 		if(name.utf8 == "")  then
 			_guihelper.MessageBox(L"名字不能为空~");
@@ -389,10 +394,10 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 		else
 			desc = "";
 		end
-
+		--echo(blocks);
 		local params = {
 			templateName = name.utf8,
-			blocks       = #TemplateShare.blocks,
+			blocks       = blocks and blocks or #TemplateShare.blocks,
 			volume       = 0,
 			isShare      = isShare and 1 or 0,
 			desc         = desc,
@@ -406,7 +411,7 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 			},
 			form    = params,
 		},function(data, err)
-			echo(data, true);
+			--echo(data, true);
 
 			local numberName = {};
 
@@ -417,16 +422,33 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 			local infoCard = format("%s%s.info.xml", template_base_dir .. numberName.default .. "/", numberName.default);
 
 			if(not ParaIO.DoesFileExist(filename)) then
-				TemplateShare.LocalSave("global", name, numberName);
+				local originBlock = format("%s%s.blocks.xml", template_base_dir .. name.default .. "/", name.default);
+				local originIMG   = format("%s%s.jpg", template_base_dir .. name.default .. "/", name.default);
+				local originTask  = format("%s%s.xml", template_base_dir .. name.default .. "/", name.default);
+
+				--echo(originIMG);
+				--echo(originTask);
+				--echo(originBlock);
+				--echo(ParaIO.DoesFileExist(originBlock));
+
+				if(ParaIO.DoesFileExist(originBlock)) then
+					ParaIO.CreateDirectory(template_base_dir .. numberName.default .. "/");
+
+					ParaIO.CopyFile(originBlock , filename, true);
+					ParaIO.CopyFile(originIMG   , template_base_dir .. numberName.default .. "/" .. numberName.default .. ".jpg", true);
+					ParaIO.CopyFile(originTask  , template_base_dir .. numberName.default .. "/" .. numberName.default .. ".xml", true);
+				else
+					TemplateShare.LocalSave("global", name, numberName, desc);
+				end
 
 				local templateInfo = {
-					{tostring(data.data.templateName), name = "templateName"},
-					{tostring(data.data.modelsnumber), name = "sn"},
-					{tostring(data.data.createDate)  , name = "createDate"},
-					{tostring(data.data.username)    , name = "username"},
-					{tostring(data.data.blocks)      , name = "blocks"},
-					{tostring(data.data.volume)      , name = "volume"},
-					{tostring(data.data.isShare)     , name = "isShare"},
+					{tostring(data.data.templateName) , name = "templateName"},
+					{tostring(data.data.modelsnumber) , name = "sn"},
+					{tostring(data.data.createDate)   , name = "createDate"},
+					{tostring(data.data.username)     , name = "username"},
+					{tostring(data.data.blocks)       , name = "blocks"},
+					{tostring(data.data.volume)       , name = "volume"},
+					{tostring(data.data.isShare)      , name = "isShare"},
 					name = "template",
 				};
 
@@ -439,7 +461,7 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 			end
 
 			local curLocalService = LocalService:new();
-			local path            = template_base_dir .. name.default .. "/";
+			local path            = template_base_dir .. numberName.default .. "/";
 
 			local files = curLocalService:LoadFiles(path);
 
@@ -449,7 +471,7 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 				if(file_index <= #files) then
 					SyncMain:uploadService(
 						loginMain.keepWorkDataSource,
-						"templates/" .. name.utf8 .. "/" .. files[file_index].filename,
+						"templates/" .. numberName.utf8 .. "/" .. files[file_index].filename,
 						files[file_index].file_content_t,
 						function(bIsUpload, filename)
 							if(bIsUpload) then
@@ -468,6 +490,8 @@ function TemplateShare.CloudSave(savePalce, isShare, templateName, templateDesc,
 		end);
 	elseif(savePalce == "world") then
 		echo("分享至世界存档");
+
+
 	end
 end
 
