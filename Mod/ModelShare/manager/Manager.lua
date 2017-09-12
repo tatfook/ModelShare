@@ -13,12 +13,14 @@ NPL.load("(gl)Mod/ModelShare/build/BuildQuestTask.lua");
 NPL.load("(gl)Mod/ModelShare/build/BuildQuestProvider.lua");
 NPL.load("(gl)Mod/ModelShare/share/TemplateShare.lua");
 NPL.load("(gl)Mod/WorldShare/service/GitlabService.lua");
+NPL.load("(gl)Mod/WorldShare/service/FileDownloader.lua");
 
 local GitlabService      = commonlib.gettable("Mod.WorldShare.service.GitlabService");
 local loginMain          = commonlib.gettable("Mod.WorldShare.login.loginMain");
 local BuildQuest         = commonlib.gettable("Mod.ModelShare.build.BuildQuest");
 local BuildQuestProvider = commonlib.gettable("Mod.ModelShare.build.BuildQuestProvider");
 local TemplateShare      = commonlib.gettable("Mod.ModelShare.share.TemplateShare");
+local FileDownloader     = commonlib.gettable("Mod.WorldShare.service.FileDownloader");
 
 local Manager = commonlib.inherit(nil, commonlib.gettable("Mod.ModelShare.manager.Manager"));
 
@@ -243,19 +245,19 @@ function Manager.CanEditing()
 		curTheme = Manager.GetTheme_DS(BuildQuest.template_theme_index);
 	end
 
-    if(curTheme) then
-        if(curTheme.official) then
-            return false;
-        else
-            return true;
-        end
-    end
+	if(curTheme) then
+		if(curTheme.official) then
+			return false;
+		else
+			return true;
+		end
+	end
 
-    return false;
+	return false;
 end
 
 function Manager.OnChangeTaskDesc()
-    Manager.isEditing = true;
+	Manager.isEditing = true;
 	Manager.Refresh();
 end
 
@@ -398,7 +400,6 @@ function Manager.shareTemplate()
 			return;
 		end
 
-		echo(curTask, true);
 		local curTemplateShare = TemplateShare:new();
 
 		if(not curTemplateShare.CloudSave("cloud", 1, curTask.name, curTask.desc, curTask.blocks_total)) then
@@ -421,14 +422,16 @@ function Manager.shareTemplate()
 		echo(curTaskDS, true);
 	elseif(curTheme.foldername == "cloudTemplate") then
 		-- download
-
-		local cloudBlock = format("%s.blocks.xml", curTaskDS.sn);
-		local cloudIMG   = format("%s.jpg", curTaskDS.sn);
+		local cloudBlock  = format("%s.blocks.xml", curTaskDS.sn);
+		local cloudIMG    = format("%s.jpg", curTaskDS.sn);
 		local cloudTask   = format("%s.xml", curTaskDS.sn);
 		local cloudInfo   = format("%s.info.xml", curTaskDS.sn);
 
 		if(not curTaskDS.status) then
-			GitlabService:getTree(function(data, err)
+			local function downloadTemplate(data, err)
+				local gitlabRawRoot   = "http://git.keepwork.com/" .. loginMain.dataSourceUsername .. "/" .. loginMain.keepWorkDataSource .. "/raw/master/";
+				local localGlobalRoot = BuildQuestProvider.categoryPaths['globalTemplate'] .. curTaskDS.sn .. "/"
+
 				local blockPath;
 				local IMGPath;
 				local TaskPath;
@@ -452,15 +455,39 @@ function Manager.shareTemplate()
 					end
 				end
 
-				echo(blockPath);
-				echo(IMGPath);
-				echo(TaskPath);
-				echo(InfoPath);
-			
-			end, "master", loginMain.keepWorkDataSourceId);
+				local function download(resource, target, callback)
+					FileDownloader:new():Init(nil, resource, target, function(bSuccess, downloadPath)
+						if(type(callback) == "function") then
+							callback(bSuccess);
+						end
+					end);
+				end
+
+				if(blockPath) then
+					download(gitlabRawRoot .. blockPath, localGlobalRoot .. cloudBlock, function(bSuccess)
+						if(bSuccess and IMGPath) then
+							download(gitlabRawRoot .. IMGPath, localGlobalRoot .. cloudIMG, function(bSuccess)
+								if(bSuccess and TaskPath) then
+									download(gitlabRawRoot .. TaskPath, localGlobalRoot .. cloudTask, function(bSuccess)
+										if(bSuccess and InfoPath) then
+											download(gitlabRawRoot .. InfoPath, localGlobalRoot .. cloudInfo, function(bSuccess)
+												if(bSuccess) then
+													Manager.RefreshList();
+												end
+											end);
+										end
+									end);	
+								end
+							end);
+						end
+					end);
+				end
+
+			end
+
+			GitlabService:getTree(downloadTemplate, "master", loginMain.keepWorkDataSourceId);
 		else
 			_guihelper.MessageBox(L"模板已下载");
 		end
-		echo(333)
 	end
 end
